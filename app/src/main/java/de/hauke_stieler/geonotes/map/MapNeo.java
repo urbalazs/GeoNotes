@@ -8,14 +8,23 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.PowerManager;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.BlendModeColorFilterCompat;
 import androidx.core.graphics.BlendModeCompat;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import org.maplibre.android.annotations.MarkerOptions;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.maps.MapView;
+import org.maplibre.android.plugins.annotation.Symbol;
+import org.maplibre.android.plugins.annotation.SymbolManager;
+import org.maplibre.android.plugins.annotation.SymbolOptions;
+import org.maplibre.android.utils.BitmapUtils;
 
 import java.io.File;
 import java.util.Collections;
@@ -24,6 +33,7 @@ import java.util.List;
 import de.hauke_stieler.geonotes.Injector;
 import de.hauke_stieler.geonotes.R;
 import de.hauke_stieler.geonotes.common.BitmapRenderer;
+import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
@@ -42,6 +52,7 @@ public class MapNeo {
     private final Database database;
     private final SharedPreferences preferences;
     private final NoteIconProvider noteIconProvider;
+    private SymbolManager symbolManager;
 
     private final MapView map;
 //    private final IMapController mapController;
@@ -97,7 +108,20 @@ public class MapNeo {
 
         map.getMapAsync(mlMap -> {
             // TODO use this file from local resources. Try e.g. via mlMap.setStyle(Uri.parse("R.drawable.image")); or similar
-            mlMap.setStyle("https://roblabs.com/xyz-raster-sources/styles/openstreetmap.json");
+            mlMap.setStyle("https://roblabs.com/xyz-raster-sources/styles/openstreetmap.json", style -> {
+                this.symbolManager = new SymbolManager(map, mlMap, style);
+                this.symbolManager.setIconAllowOverlap(true);
+                this.symbolManager.addClickListener(clickedSymbol -> {
+                    selectMarker(clickedSymbol, false);
+                    return true;
+                });
+
+                this.noteIconProvider
+                        .getIconNameToDrawableMap()
+                        .forEach((name, drawable) -> style.addImage(name, BitmapUtils.getBitmapFromDrawable(drawable)));
+
+                reloadAllNotes();
+            });
             mlMap.setCameraPosition(new CameraPosition.Builder().target(new LatLng(0.0, 0.0)).zoom(1.0).build());
         });
 
@@ -118,8 +142,6 @@ public class MapNeo {
 //        mapController.setCenter(startPoint);
 
         createOverlays((BitmapDrawable) locationIcon, (BitmapDrawable) arrowIcon);
-
-        reloadAllNotes();
     }
 
     public void reloadAllNotes() {
@@ -141,9 +163,11 @@ public class MapNeo {
             this.markerFragment.reset();
         } else {
             // TODO load notes from map and create marker on map
-//            for (Note n : allNotes) {
-//                createMarker("" + n.getId(), n.getDescription(), new GeoPoint(n.getLat(), n.getLon()), n.getCategory().getId(), markerClickListener);
-//            }
+            for (Note n : allNotes) {
+                // TODO Handle click in icon. Previuosly done with markerClickListener
+                Symbol marker = createMarker(n);
+                this.symbolManager.update(marker);
+            }
         }
 
         redraw();
@@ -402,20 +426,22 @@ public class MapNeo {
      *                                When set to false: The text of the tapped note will be read
      *                                and shown in the edit field.
      */
-    private void selectMarker(GeoNotesMarker markerToSelect, boolean transferEditTextContent) {
-        // Deselect previously selected marker
-        GeoNotesMarker currentlySelectedMarker = markerFragment.getSelectedMarker();
-        if (currentlySelectedMarker != null) {
-            markerFragment.reset();
-            deselectMarker(currentlySelectedMarker);
-        }
+    private void selectMarker(Symbol markerToSelect, boolean transferEditTextContent) {
+        // TODO Deselect previously selected marker
+//        GeoNotesMarker currentlySelectedMarker = markerFragment.getSelectedMarker();
+//        if (currentlySelectedMarker != null) {
+//            markerFragment.reset();
+//            deselectMarker(currentlySelectedMarker);
+//        }
 
-        setIcon(markerToSelect, true);
-        markerFragment.selectMarker(markerToSelect, transferEditTextContent);
-        zoomToSelectedMarker();
-
-        addImagesToMarkerFragment();
-        redraw();
+        // TODO
+//        setIcon(markerToSelect, true);
+//        markerFragment.selectMarker(markerToSelect, transferEditTextContent);
+//        zoomToSelectedMarker();
+//
+//        addImagesToMarkerFragment();
+//        redraw();
+        Toast.makeText(this.context, "Clicked " + ((JsonObject)markerToSelect.getData()).get("description"), Toast.LENGTH_SHORT).show();
     }
 
     private void deselectMarker(GeoNotesMarker marker) {
@@ -490,14 +516,25 @@ public class MapNeo {
     /**
      * Just creates a new marker and adds it to the map overlay. No database operations or selection is performed.
      */
-    // TODO
-//    private GeoNotesMarker createMarker(String id, String description, GeoPoint p, long categoryId, Marker.OnMarkerClickListener markerClickListener) {
+    private Symbol createMarker(Note note) {
 //        GeoNotesMarker marker = new GeoNotesMarker(map, id, description, p, categoryId);
 //        marker.setOnMarkerClickListener(markerClickListener);
 //        setIcon(marker, false);
 //        map.getOverlays().add(marker);
-//        return null;
-//    }
+
+        JsonObject data = new JsonObject();
+        data.addProperty("description", note.getDescription());
+
+        Symbol symbol = this.symbolManager.create(
+                new SymbolOptions()
+                        .withLatLng(new LatLng(note.getLat(), note.getLon()))
+                        .withIconImage("category-" + note.getCategory().getId() + "-normal") // TODO extract name creation and make sure correct Icon is set here
+                        .withData(data)
+        );
+
+        return symbol;
+    }
+
     public void onResume() {
         // TODO Necessary with maplibre?
 //        map.onResume();

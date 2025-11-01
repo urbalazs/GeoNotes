@@ -73,4 +73,15 @@ public class NoteIconProvider {
             }
         }
     }
+
+    public Map<String, Drawable> getIconNameToDrawableMap() {
+        HashMap<String, Drawable> result = new HashMap<>();
+
+        categoryToNormalIcon.forEach((categoryId, drawable) -> result.put("category-"+categoryId+"-normal", drawable));
+        categoryToCameraIcon.forEach((categoryId, drawable) -> result.put("category-"+categoryId+"-camera", drawable));
+        categoryToNormalIconSelected.forEach((categoryId, drawable) -> result.put("category-"+categoryId+"-normal-selected", drawable));
+        categoryToCameraIconSelected.forEach((categoryId, drawable) -> result.put("category-"+categoryId+"-camera-selected", drawable));
+
+        return result;
+    }
 }
