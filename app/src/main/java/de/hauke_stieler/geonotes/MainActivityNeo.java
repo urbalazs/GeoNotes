@@ -182,7 +182,6 @@ public class MainActivityNeo extends AppCompatActivity {
     }
 
     private void createMap() {
-        View viewById = findViewById(R.id.map_neo);
         map = Injector.get(MapNeo.class);
 
         // TODO Add listeners to map

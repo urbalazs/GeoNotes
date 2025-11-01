@@ -96,7 +96,8 @@ public class MapNeo {
         Drawable arrowIcon = BitmapRenderer.renderToBitmap(context, arrowIconBackground, arrowIconForeground);
 
         map.getMapAsync(mlMap -> {
-            mlMap.setStyle("https://demotiles.maplibre.org/style.json");
+            // TODO use this file from local resources. Try e.g. via mlMap.setStyle(Uri.parse("R.drawable.image")); or similar
+            mlMap.setStyle("https://roblabs.com/xyz-raster-sources/styles/openstreetmap.json");
             mlMap.setCameraPosition(new CameraPosition.Builder().target(new LatLng(0.0, 0.0)).zoom(1.0).build());
         });
 
