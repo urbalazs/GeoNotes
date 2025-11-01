@@ -529,6 +529,7 @@ public class MapNeo {
                 new SymbolOptions()
                         .withLatLng(new LatLng(note.getLat(), note.getLon()))
                         .withIconImage("category-" + note.getCategory().getId() + "-normal") // TODO extract name creation and make sure correct Icon is set here
+                        .withIconAnchor("bottom")
                         .withData(data)
         );
 
