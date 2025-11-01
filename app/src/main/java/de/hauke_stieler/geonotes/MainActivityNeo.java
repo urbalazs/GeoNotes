@@ -1,7 +1,6 @@
 package de.hauke_stieler.geonotes;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,8 +10,6 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,7 +24,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.CameraSelector;
@@ -41,11 +37,7 @@ import androidx.core.content.ContextCompat;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.maplibre.android.MapLibre;
-import org.osmdroid.api.IGeoPoint;
-import org.osmdroid.events.DelayedMapListener;
-import org.osmdroid.events.MapListener;
-import org.osmdroid.events.ScrollEvent;
-import org.osmdroid.events.ZoomEvent;
+import org.maplibre.android.plugins.annotation.Symbol;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,16 +50,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import de.hauke_stieler.geonotes.categories.Category;
 import de.hauke_stieler.geonotes.categories.CategoryConfigurationActivity;
 import de.hauke_stieler.geonotes.common.ExifHelper;
-import de.hauke_stieler.geonotes.common.FileHelper;
 import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.databinding.ActivityMainBinding;
 import de.hauke_stieler.geonotes.export.BackupImportDialog;
 import de.hauke_stieler.geonotes.export.Exporter;
 import de.hauke_stieler.geonotes.map.GeoNotesMarker;
-import de.hauke_stieler.geonotes.map.Map;
+import de.hauke_stieler.geonotes.map.GeoNotesSymbol;
 import de.hauke_stieler.geonotes.map.MapNeo;
 import de.hauke_stieler.geonotes.map.MarkerFragment;
+import de.hauke_stieler.geonotes.map.MarkerFragmentNeo;
 import de.hauke_stieler.geonotes.note_list.NoteListActivity;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 import de.hauke_stieler.geonotes.photo.ThumbnailUtil;
@@ -161,9 +153,9 @@ public class MainActivityNeo extends AppCompatActivity {
     }
 
     private void createMarkerFragment() {
-        MarkerFragment markerFragment = (MarkerFragment) getSupportFragmentManager().findFragmentById(R.id.map_marker_fragment);
+        MarkerFragmentNeo markerFragment = (MarkerFragmentNeo) getSupportFragmentManager().findFragmentById(R.id.map_marker_fragment);
         if (markerFragment == null) {
-            markerFragment = new MarkerFragment();
+            markerFragment = new MarkerFragmentNeo();
 
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
@@ -179,8 +171,8 @@ public class MainActivityNeo extends AppCompatActivity {
                 }
 
                 if (savedInstanceState.getBoolean(BUNDLE_KEY_CAMERA_IS_OPEN, false)) {
-                    GeoNotesMarker marker = map.getSelectedMarker();
-                    startCamera(Long.parseLong(marker.getId()), marker.getPosition().getLongitude(), marker.getPosition().getLatitude());
+                    Symbol symbol = map.getSelectedSymbol();
+                    startCamera(GeoNotesSymbol.getNoteId(symbol), symbol.getLatLng().getLongitude(), symbol.getLatLng().getLatitude());
                 }
             }
         });
@@ -290,9 +282,9 @@ public class MainActivityNeo extends AppCompatActivity {
 
         outState.putBoolean(BUNDLE_KEY_CAMERA_IS_OPEN, findViewById(R.id.camera_layout).getVisibility() == View.VISIBLE);
 
-        GeoNotesMarker marker = map.getSelectedMarker();
-        if (marker != null) {
-            outState.putLong(BUNDLE_KEY_SELECTED_NOTE_ID, Long.parseLong(marker.getId()));
+        Symbol symbol = map.getSelectedSymbol();
+        if (symbol != null) {
+            outState.putLong(BUNDLE_KEY_SELECTED_NOTE_ID, GeoNotesSymbol.getNoteId(symbol));
         }
     }
 
@@ -539,8 +531,8 @@ public class MainActivityNeo extends AppCompatActivity {
 
             // Re-select the note so that the input field is selected and the keyboard comes up.
             // Makes it easier to add text after taking pictures.
-            if (map.getSelectedMarker() != null) {
-                map.selectNote(Long.parseLong(map.getSelectedMarker().getId()));
+            if (map.getSelectedSymbol() != null) {
+                map.selectNote(GeoNotesSymbol.getNoteId(map.getSelectedSymbol()));
             }
         } catch (Exception e) {
             Log.e("closeCamera", "Error while unbinding camera lifecycle: ", e);

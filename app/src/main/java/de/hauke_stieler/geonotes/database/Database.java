@@ -156,6 +156,7 @@ public class Database extends SQLiteOpenHelper {
         }
     }
 
+    // TODO long noteId?
     public Note getNote(String noteId) {
         return noteStore.getNote(getReadableDatabase(), noteId);
     }

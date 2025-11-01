@@ -8,16 +8,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.PowerManager;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.BlendModeColorFilterCompat;
 import androidx.core.graphics.BlendModeCompat;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.maplibre.android.annotations.MarkerOptions;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.maps.MapView;
@@ -33,7 +30,6 @@ import java.util.List;
 import de.hauke_stieler.geonotes.Injector;
 import de.hauke_stieler.geonotes.R;
 import de.hauke_stieler.geonotes.common.BitmapRenderer;
-import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
@@ -59,13 +55,13 @@ public class MapNeo {
 //    private MyLocationNewOverlay locationOverlay;
 //    private GpsMyLocationProvider gpsLocationProvider;
 
-    private final MarkerFragment markerFragment;
+    private final MarkerFragmentNeo markerFragment;
 //    private Marker.OnMarkerClickListener markerClickListener;
 
     private boolean snapNoteToGps;
 
-    // Variables used during moving a marker. Do not use when no marker is currently in move mode (aka when markerToMove==null)
-    private GeoNotesMarker markerToMove;
+    // Variables used during moving a symbol. Do not use when no symbol is currently in move mode (aka when markerToMove==null)
+    private Symbol markerToMove;
     private Point dragStartMarkerPosition;
 
     // TODO needed in maplibre map?
@@ -84,7 +80,7 @@ public class MapNeo {
         this.preferences = preferences;
         this.noteIconProvider = noteIconProvider;
 
-        markerFragment = Injector.get(MarkerFragment.class);
+        markerFragment = Injector.get(MarkerFragmentNeo.class);
         addMarkerFragmentEventHandler(markerFragment);
 
         // Keep device on
@@ -145,28 +141,19 @@ public class MapNeo {
     }
 
     public void reloadAllNotes() {
-        GeoNotesMarker currentlySelectedMarker = markerFragment.getSelectedMarker();
-        if (currentlySelectedMarker != null) {
+        Symbol currentlySelectedSymbol = getSelectedSymbol();
+        if (currentlySelectedSymbol != null) {
             markerFragment.reset();
-            deselectMarker(currentlySelectedMarker);
+            deselectMarker(currentlySelectedSymbol);
         }
-
-        // TODO add marker to layer
-//        for (Overlay o : map.getOverlays()) {
-//            if (o instanceof Marker) {
-//                map.getOverlayManager().remove(o);
-//            }
-//        }
 
         List<Note> allNotes = this.database.getAllNotes();
         if (allNotes.isEmpty()) {
             this.markerFragment.reset();
         } else {
-            // TODO load notes from map and create marker on map
             for (Note n : allNotes) {
-                // TODO Handle click in icon. Previuosly done with markerClickListener
-                Symbol marker = createMarker(n);
-                this.symbolManager.update(marker);
+                Symbol symbol = createMarker(n);
+                this.symbolManager.update(symbol);
             }
         }
 
@@ -198,13 +185,13 @@ public class MapNeo {
 //        scaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 20);
 //        map.getOverlays().add(scaleBarOverlay);
 //
-//        // Add marker click listener. Will be called when the user clicks/taps on a marker.
-//        markerClickListener = (marker, mapView) -> {
-//            if (marker instanceof GeoNotesMarker) {
-//                selectMarker((GeoNotesMarker) marker, false);
+//        // Add symbol click listener. Will be called when the user clicks/taps on a symbol.
+//        markerClickListener = (symbol, mapView) -> {
+//            if (symbol instanceof Symbol) {
+//                selectMarker((Symbol) symbol, false);
 //                return true;
 //            }
-//            Toast.makeText(context, "Marker " + marker.getId() + " is NOT a GeoNotesMarker", Toast.LENGTH_LONG).show();
+//            Toast.makeText(context, "Marker " + GeoNotesSymbol.getNoteId(symbol) + " is NOT a Symbol", Toast.LENGTH_LONG).show();
 //            return false;
 //        };
 //
@@ -229,14 +216,14 @@ public class MapNeo {
 //            }
 //
 //            private void createMarker(GeoPoint p) {
-//                // No marker to move here -> deselect or create marker
-//                // (selecting marker on the map is handles via the separate markerClickListener)
+//                // No symbol to move here -> deselect or create symbol
+//                // (selecting symbol on the map is handles via the separate markerClickListener)
 //                if (markerFragment.getSelectedMarker() != null) {
-//                    // Deselect selected marker:
+//                    // Deselect selected symbol:
 //                    setIcon(markerFragment.getSelectedMarker(), false);
 //                }
 //
-//                // Create new marker at this location and select it
+//                // Create new symbol at this location and select it
 //                initAndSelectMarker(p);
 //            }
 //        };
@@ -274,13 +261,13 @@ public class MapNeo {
 //                case MotionEvent.ACTION_DOWN:
 //                    touchDownListener.onTouchedDown();
 //
-//                    // Initialize movement of the marker: Store current screen-location to keep marker there
+//                    // Initialize movement of the symbol: Store current screen-location to keep symbol there
 //                    if (markerToMove != null) {
 //                        dragStartMarkerPosition = map.getProjection().toPixels(markerToMove.getPosition(), null);
 //                    }
 //                    break;
 //                case MotionEvent.ACTION_MOVE:
-//                    // When in drag-mode: Keep marker at original screen location by setting its position
+//                    // When in drag-mode: Keep symbol at original screen location by setting its position
 //                    if (markerToMove != null && dragStartMarkerPosition != null) {
 //                        markerToMove.setPosition((GeoPoint) map.getProjection().fromPixels(dragStartMarkerPosition.x, dragStartMarkerPosition.y));
 //                    }
@@ -289,7 +276,7 @@ public class MapNeo {
 //                    if (markerToMove != null) {
 //                        selectMarker(markerToMove, false);
 //
-//                        // If the ID is set, the marker exists in the DB, therefore we store that new location
+//                        // If the ID is set, the symbol exists in the DB, therefore we store that new location
 //                        String id = markerToMove.getId();
 //                        Double longitude = null;
 //                        Double latitude = null;
@@ -312,59 +299,59 @@ public class MapNeo {
 //        });
 //    }
 
-    private void addMarkerFragmentEventHandler(MarkerFragment fragment) {
-        fragment.addEventHandler(new MarkerFragment.MarkerFragmentEventHandler() {
+    private void addMarkerFragmentEventHandler(MarkerFragmentNeo fragment) {
+        fragment.addEventHandler(new MarkerFragmentNeo.SymbolFragmentEventHandler() {
             @Override
-            public void onDelete(GeoNotesMarker marker) {
+            public void onDelete(Symbol symbol) {
                 // We always have an ID and can therefore delete the note
-                database.removeNote(Long.parseLong(marker.getId()));
-                database.removePhotos(Long.parseLong(marker.getId()), context.getExternalFilesDir("GeoNotes"));
+                database.removeNote(GeoNotesSymbol.getNoteId(symbol));
+                database.removePhotos(GeoNotesSymbol.getNoteId(symbol), context.getExternalFilesDir("GeoNotes"));
                 // TODO
-//                map.getOverlays().remove(marker);
+//                map.getOverlays().remove(symbol);
                 redraw();
             }
 
             @Override
-            public void onSave(GeoNotesMarker marker) {
+            public void onSave(Symbol symbol) {
                 // We always have an ID and can therefore update the note
-                database.updateNoteDescription(Long.parseLong(marker.getId()), marker.getSnippet());
+                database.updateNoteDescription(GeoNotesSymbol.getNoteId(symbol), GeoNotesSymbol.getDescription(symbol));
             }
 
             @Override
-            public void onClose(GeoNotesMarker marker) {
-                deselectMarker(marker);
+            public void onClose(Symbol symbol) {
+                deselectMarker(symbol);
             }
 
             @Override
-            public void onMove(GeoNotesMarker marker) {
-                markerToMove = marker;
+            public void onMove(Symbol symbol) {
+                markerToMove = symbol;
                 redraw();
             }
 
             @Override
-            public void onCategoryChanged(GeoNotesMarker marker) {
-                database.updateNoteCategory(Long.parseLong(marker.getId()), marker.getCategoryId());
+            public void onCategoryChanged(Symbol symbol) {
+                database.updateNoteCategory(GeoNotesSymbol.getNoteId(symbol), GeoNotesSymbol.getCategoryId(symbol));
 
                 SharedPreferences.Editor editor = preferences.edit();
-                editor.putLong(context.getString(R.string.pref_last_category_id), marker.getCategoryId());
+                editor.putLong(context.getString(R.string.pref_last_category_id), GeoNotesSymbol.getCategoryId(symbol));
                 editor.commit();
 
                 // Update Icon with the new color
-                setIcon(marker, getSelectedMarker() == marker);
+                setIcon(symbol, getSelectedSymbol() == symbol);
 
                 redraw();
             }
         });
     }
 
-    // This forces a re-draw of the map. Otherwise changes will only be visible when moving the map after e.g. the selected marker changed.
+    // This forces a re-draw of the map. Otherwise changes will only be visible when moving the map after e.g. the selected symbol changed.
     private void redraw() {
         // TODO necessary?
 //        map.postInvalidate();
     }
 
     /**
-     * Creates a new note in the database, creates a corresponding marker (s. createMarker()) and also selects this new marker.
+     * Creates a new note in the database, creates a corresponding symbol (s. createMarker()) and also selects this new symbol.
      */
     // TODO
 //    private void initAndSelectMarker(GeoPoint location) {
@@ -376,7 +363,7 @@ public class MapNeo {
 //            location = snapToGpsLocation(location);
 //        }
 //
-//        GeoNotesMarker newMarker = createMarker("" + id, "", location, categoryId, markerClickListener);
+//        Symbol newMarker = createMarker("" + id, "", location, categoryId, markerClickListener);
 //        selectMarker(newMarker, true);
 //    }
 
@@ -410,15 +397,15 @@ public class MapNeo {
     public void selectNote(long noteId) {
         // TODO
 //        String noteIdString = "" + noteId;
-//        for (Overlay marker : map.getOverlays()) {
-//            if (marker instanceof GeoNotesMarker && ((GeoNotesMarker) marker).getId().equals(noteIdString)) {
-//                this.selectMarker((GeoNotesMarker) marker, false);
+//        for (Overlay symbol : map.getOverlays()) {
+//            if (symbol instanceof Symbol && ((Symbol) symbol).getId().equals(noteIdString)) {
+//                this.selectMarker((Symbol) symbol, false);
 //            }
 //        }
     }
 
     /**
-     * @param markerToSelect          The marker to select.
+     * @param symbolToSelect          The symbol to select.
      * @param transferEditTextContent When set to true: If the user typed any text into the input
      *                                field without a selected note and *then* tapped on the map
      *                                to create or select one, this prior entered text schould be
@@ -426,65 +413,82 @@ public class MapNeo {
      *                                When set to false: The text of the tapped note will be read
      *                                and shown in the edit field.
      */
-    private void selectMarker(Symbol markerToSelect, boolean transferEditTextContent) {
-        // TODO Deselect previously selected marker
-//        GeoNotesMarker currentlySelectedMarker = markerFragment.getSelectedMarker();
+    private void selectMarker(Symbol symbolToSelect, boolean transferEditTextContent) {
+        // TODO Deselect previously selected symbol
+//        Symbol currentlySelectedMarker = markerFragment.getSelectedMarker();
 //        if (currentlySelectedMarker != null) {
 //            markerFragment.reset();
 //            deselectMarker(currentlySelectedMarker);
 //        }
 
         // TODO
-//        setIcon(markerToSelect, true);
-//        markerFragment.selectMarker(markerToSelect, transferEditTextContent);
-//        zoomToSelectedMarker();
-//
-//        addImagesToMarkerFragment();
-//        redraw();
-        Toast.makeText(this.context, "Clicked " + ((JsonObject)markerToSelect.getData()).get("description"), Toast.LENGTH_SHORT).show();
+//        setIcon(symbolToSelect, true);
+
+//        for (int i = 0; i < this.symbolManager.getAnnotations().size(); i++) {
+//            Symbol otherSymbol = this.symbolManager.getAnnotations().valueAt(i);
+//            if (GeoNotesSymbol.hasSelectedStyle(otherSymbol)) {
+//                otherSymbol.setIconImage(GeoNotesSymbol.getIconName(otherSymbol));
+//                this.symbolManager.update(otherSymbol);
+//            }
+//        }
+
+        Symbol currentlySelectedSymbol = getSelectedSymbol();
+        if (currentlySelectedSymbol != null) {
+            setIcon(currentlySelectedSymbol, false);
+        }
+
+        setIcon(symbolToSelect, true);
+
+        this.markerFragment.selectSymbol(symbolToSelect, transferEditTextContent);
+        zoomToSelectedMarker();
+
+        addImagesToMarkerFragment();
+        redraw();
     }
 
-    private void deselectMarker(GeoNotesMarker marker) {
-        if (marker == null) {
+    private void deselectMarker(Symbol symbol) {
+        if (symbol == null) {
             return;
         }
 
-        // This icon will not be the selected marker after "showInfoWindow", therefore we set the normal icon here.
-        setIcon(marker, false);
+        // This icon will not be the selected symbol after "showInfoWindow", therefore we set the normal icon here.
+        setIcon(symbol, false);
     }
 
-    public GeoNotesMarker getSelectedMarker() {
-        return markerFragment.getSelectedMarker();
+    public Symbol getSelectedSymbol() {
+        return markerFragment.getSelectedSymbol();
     }
 
     /**
-     * Loads images of current marker (which contains the note-ID) from database and show them.
+     * Loads images of current symbol (which contains the note-ID) from database and show them.
      */
     public List<String> addImagesToMarkerFragment() {
         markerFragment.resetImageList();
-        GeoNotesMarker marker = markerFragment.getSelectedMarker();
+        Symbol symbol = getSelectedSymbol();
 
         // It could happen that the user rotates the device (e.g. while taking a photo) and this
-        // causes the whole activity to be reset. Therefore we might not have a marker here.
-        if (marker == null) {
+        // causes the whole activity to be reset. Therefore we might not have a symbol here.
+        if (symbol == null) {
             return Collections.emptyList();
         }
 
-        List<String> photoFileNames = database.getPhotos(marker.getId());
+        List<String> photoFileNames = database.getPhotos(GeoNotesSymbol.getNoteId(symbol).toString());
         for (String photoFileName : photoFileNames) {
             File storageDir = context.getExternalFilesDir("GeoNotes");
             File image = new File(storageDir, photoFileName);
             markerFragment.addPhoto(image);
         }
 
-        setIcon(marker, true);
+        setIcon(symbol, true);
         redraw();
 
         return photoFileNames;
     }
 
-    private void setIcon(GeoNotesMarker marker, boolean isSelected) {
-        marker.setIcon(noteIconProvider.getIcon(marker.getCategoryId(), isSelected, database.hasPhotos(marker.getId())));
+    private void setIcon(Symbol symbol, boolean isSelected) {
+        boolean hasPhotos = database.hasPhotos(GeoNotesSymbol.getNoteId(symbol));
+        symbol.setIconImage(GeoNotesSymbol.getIconName(symbol, hasPhotos, isSelected));
+        this.symbolManager.update(symbol);
     }
 
     public void setZoomButtonVisibility(boolean visible) {
@@ -499,7 +503,7 @@ public class MapNeo {
 
     private void zoomToSelectedMarker() {
         // Before resuming (e.g. when switching back from the list of notes to the main activity),
-        // the map doesn't zoom to markers. Therefore we here zoom to the currently selected marker.
+        // the map doesn't zoom to markers. Therefore we here zoom to the currently selected symbol.
         // TODO
 //        Marker selectedMarker = getSelectedMarker();
 //        if (selectedMarker != null) {
@@ -514,26 +518,20 @@ public class MapNeo {
 //    }
 
     /**
-     * Just creates a new marker and adds it to the map overlay. No database operations or selection is performed.
+     * Just creates a new symbol and adds it to the map overlay. No database operations or selection is performed.
      */
     private Symbol createMarker(Note note) {
-//        GeoNotesMarker marker = new GeoNotesMarker(map, id, description, p, categoryId);
-//        marker.setOnMarkerClickListener(markerClickListener);
-//        setIcon(marker, false);
-//        map.getOverlays().add(marker);
+        boolean hasPhoto = database.hasPhotos(note.getId());
 
-        JsonObject data = new JsonObject();
-        data.addProperty("description", note.getDescription());
+        JsonObject data = GeoNotesSymbol.getData(note);
 
-        Symbol symbol = this.symbolManager.create(
+        return this.symbolManager.create(
                 new SymbolOptions()
                         .withLatLng(new LatLng(note.getLat(), note.getLon()))
-                        .withIconImage("category-" + note.getCategory().getId() + "-normal") // TODO extract name creation and make sure correct Icon is set here
+                        .withIconImage(GeoNotesSymbol.getIconName(note, hasPhoto, false))
                         .withIconAnchor("bottom")
                         .withData(data)
         );
-
-        return symbol;
     }
 
     public void onResume() {
@@ -593,7 +591,7 @@ public class MapNeo {
         return false;
     }
 
-    public void addRequestPhotoHandler(MarkerFragment.RequestPhotoEventHandler requestPhotoEventHandler) {
+    public void addRequestPhotoHandler(MarkerFragmentNeo.RequestPhotoEventHandler requestPhotoEventHandler) {
         this.markerFragment.addRequestPhotoHandler(requestPhotoEventHandler);
     }
 
