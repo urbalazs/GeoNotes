@@ -35,8 +35,10 @@ public class Injector {
         classBuilders.put(Exporter.class, () -> buildExporter());
         classBuilders.put(SharedPreferences.class, () -> buildSharedPreferences());
         classBuilders.put(MapView.class, () -> buildMapView());
+        classBuilders.put(org.maplibre.android.maps.MapView.class, () -> buildMapViewNeo());
         classBuilders.put(NoteIconProvider.class, () -> buildNoteIconProvider());
         classBuilders.put(de.hauke_stieler.geonotes.map.Map.class, () -> buildMap());
+        classBuilders.put(de.hauke_stieler.geonotes.map.MapNeo.class, () -> buildMapNeo());
     }
 
     public static void registerActivity(Activity newActivity) {
@@ -78,6 +80,10 @@ public class Injector {
         return activity.findViewById(R.id.map);
     }
 
+    private static org.maplibre.android.maps.MapView buildMapViewNeo() {
+        return activity.findViewById(R.id.map_neo);
+    }
+
     private static NoteIconProvider buildNoteIconProvider() {
         return new NoteIconProvider(context, get(Database.class));
     }
@@ -85,5 +91,10 @@ public class Injector {
     private static de.hauke_stieler.geonotes.map.Map buildMap() {
         MapView mapView = get(MapView.class);
         return new de.hauke_stieler.geonotes.map.Map(context, mapView, get(Database.class), get(SharedPreferences.class), get(NoteIconProvider.class));
+    }
+
+    private static de.hauke_stieler.geonotes.map.MapNeo buildMapNeo() {
+        org.maplibre.android.maps.MapView mapView = get(org.maplibre.android.maps.MapView.class);
+        return new de.hauke_stieler.geonotes.map.MapNeo(context, mapView, get(Database.class), get(SharedPreferences.class), get(NoteIconProvider.class));
     }
 }
