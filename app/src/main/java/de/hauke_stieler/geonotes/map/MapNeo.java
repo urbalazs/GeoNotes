@@ -247,9 +247,7 @@ public class MapNeo {
                 // We always have an ID and can therefore delete the note
                 database.removeNote(GeoNotesSymbol.getNoteId(symbol));
                 database.removePhotos(GeoNotesSymbol.getNoteId(symbol), context.getExternalFilesDir("GeoNotes"));
-                // TODO
-//                map.getOverlays().remove(symbol);
-                redraw();
+                symbolManager.delete(symbol);
             }
 
             @Override
