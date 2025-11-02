@@ -186,7 +186,7 @@ public class MarkerFragmentNeo extends Fragment {
         selectedSymbol = symbol;
         state = State.EDITING;
 
-        Note note = database.getNote(GeoNotesSymbol.getNoteId(symbol).toString());
+        Note note = database.getNote(GeoNotesSymbol.getNoteId(symbol));
         View view = getView();
 
         // TODO Title

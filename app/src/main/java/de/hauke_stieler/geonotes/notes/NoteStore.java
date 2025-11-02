@@ -171,8 +171,17 @@ public class NoteStore {
         return joinedFilterString.toString();
     }
 
+    /**
+     * @Deprecated
+     */
     public Note getNote(SQLiteDatabase db, String noteId) {
         Cursor cursor = db.query(NOTES_TABLE_NAME, new String[]{NOTES_COL_ID, NOTES_COL_DESCRIPTION, NOTES_COL_LAT, NOTES_COL_LON, NOTES_COL_CREATED_AT, NOTES_COL_CATEGORY}, NOTES_COL_ID + "=?", new String[]{noteId}, null, null, null);
+        cursor.moveToFirst();
+        return getNoteFromCursor(db, cursor);
+    }
+
+    public Note getNote(SQLiteDatabase db, long noteId) {
+        Cursor cursor = db.query(NOTES_TABLE_NAME, new String[]{NOTES_COL_ID, NOTES_COL_DESCRIPTION, NOTES_COL_LAT, NOTES_COL_LON, NOTES_COL_CREATED_AT, NOTES_COL_CATEGORY}, NOTES_COL_ID + "=?", new String[]{noteId + ""}, null, null, null);
         cursor.moveToFirst();
         return getNoteFromCursor(db, cursor);
     }

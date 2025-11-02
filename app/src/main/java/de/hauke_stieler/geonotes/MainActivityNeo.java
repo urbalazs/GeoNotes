@@ -1,6 +1,7 @@
 package de.hauke_stieler.geonotes;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.CameraSelector;
@@ -50,6 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import de.hauke_stieler.geonotes.categories.Category;
 import de.hauke_stieler.geonotes.categories.CategoryConfigurationActivity;
 import de.hauke_stieler.geonotes.common.ExifHelper;
+import de.hauke_stieler.geonotes.common.FileHelper;
 import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.databinding.ActivityMainBinding;
@@ -183,8 +186,7 @@ public class MainActivityNeo extends AppCompatActivity {
     private void createMap() {
         map = Injector.get(MapNeo.class);
 
-        // TODO Add listeners to map
-//        addMapListener();
+        addMapListener();
     }
 
     void loadPreferences() {
@@ -361,26 +363,26 @@ public class MainActivityNeo extends AppCompatActivity {
 //            }
 //        }, 500);
 
-        // TODO Map interaction -> End GPS-follow mode
-//        @SuppressLint("RestrictedApi")
-//        Map.TouchDownListener touchDownCallback = () -> {
-//            ActionMenuItemView menuItem = findViewById(R.id.toolbar_btn_gps_follow);
-//            if (menuItem != null) {
-//                menuItem.setIcon(getResources().getDrawable(R.drawable.ic_location_searching));
-//            }
-//        };
+        // TODO Testing: Map interaction -> End GPS-follow mode
+        @SuppressLint("RestrictedApi")
+        MapNeo.TouchDownListener touchDownCallback = () -> {
+            ActionMenuItemView menuItem = findViewById(R.id.toolbar_btn_gps_follow);
+            if (menuItem != null) {
+                menuItem.setIcon(getResources().getDrawable(R.drawable.ic_location_searching));
+            }
+        };
 
         // TODO Note moves -> adjust EXIF data in photos
-//        Map.NoteMovedListener noteMovedCallback = (noteId, longitude, latitude) -> {
-//            File externalFilesDir = getExternalFilesDir(FileHelper.GEONOTES_EXTERNAL_DIR_NAME);
-//            database.getPhotos(noteId).forEach(photo -> {
-//                File photoFile = new File(externalFilesDir, photo);
-//                addPositionToImageExifData(photoFile, longitude, latitude);
-//            });
-//        };
+        MapNeo.NoteMovedListener noteMovedCallback = (noteId, longitude, latitude) -> {
+            File externalFilesDir = getExternalFilesDir(FileHelper.GEONOTES_EXTERNAL_DIR_NAME);
+            database.getPhotos(noteId).forEach(photo -> {
+                File photoFile = new File(externalFilesDir, photo);
+                addPositionToImageExifData(photoFile, longitude, latitude);
+            });
+        };
 
-//        map.addMapListener(delayedMapListener, touchDownCallback, noteMovedCallback);
-//        map.addRequestPhotoHandler(this::startCamera);
+        map.addMapListener(touchDownCallback, noteMovedCallback);
+        map.addRequestPhotoHandler(this::startCamera);
     }
 
     private void animateFocusRing(float x, float y) {

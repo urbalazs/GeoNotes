@@ -156,11 +156,16 @@ public class Database extends SQLiteOpenHelper {
         }
     }
 
-    // TODO long noteId?
+    /**
+     * @Deprecated
+     */
     public Note getNote(String noteId) {
         return noteStore.getNote(getReadableDatabase(), noteId);
     }
 
+    public Note getNote(long noteId) {
+        return noteStore.getNote(getReadableDatabase(), noteId);
+    }
 
     public long addCategory(String color, String name, long sortKey) {
         return categoryStore.addCategory(getWritableDatabase(), color, name, sortKey);

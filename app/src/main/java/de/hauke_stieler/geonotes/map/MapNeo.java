@@ -1,5 +1,6 @@
 package de.hauke_stieler.geonotes.map;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -7,6 +8,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.PowerManager;
+import android.view.MotionEvent;
 import android.view.WindowManager;
 
 import androidx.core.content.res.ResourcesCompat;
@@ -30,6 +32,7 @@ import java.util.List;
 import de.hauke_stieler.geonotes.Injector;
 import de.hauke_stieler.geonotes.R;
 import de.hauke_stieler.geonotes.common.BitmapRenderer;
+import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
@@ -50,7 +53,7 @@ public class MapNeo {
     private final NoteIconProvider noteIconProvider;
     private SymbolManager symbolManager;
 
-    private final MapView map;
+    private final MapView mapView;
 //    private final IMapController mapController;
 //    private MyLocationNewOverlay locationOverlay;
 //    private GpsMyLocationProvider gpsLocationProvider;
@@ -61,7 +64,7 @@ public class MapNeo {
     private boolean snapNoteToGps;
 
     // Variables used during moving a symbol. Do not use when no symbol is currently in move mode (aka when markerToMove==null)
-    private Symbol markerToMove;
+    private Symbol symbolToMove;
     private Point dragStartMarkerPosition;
 
     // TODO needed in maplibre map?
@@ -70,12 +73,12 @@ public class MapNeo {
 //    private ClickableMapCompass compassOverlay;
 
     public MapNeo(Context context,
-                  MapView map,
+                  MapView mapView,
                   Database database,
                   SharedPreferences preferences,
                   NoteIconProvider noteIconProvider) {
         this.context = context;
-        this.map = map;
+        this.mapView = mapView;
         this.database = database;
         this.preferences = preferences;
         this.noteIconProvider = noteIconProvider;
@@ -102,11 +105,28 @@ public class MapNeo {
         arrowIconForeground.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(Color.parseColor("#66bb6a"), BlendModeCompat.SRC_IN));
         Drawable arrowIcon = BitmapRenderer.renderToBitmap(context, arrowIconBackground, arrowIconForeground);
 
-        map.getMapAsync(mlMap -> {
+        mapView.getMapAsync(mlMap -> {
             // TODO use this file from local resources. Try e.g. via mlMap.setStyle(Uri.parse("R.drawable.image")); or similar
             mlMap.setStyle("https://roblabs.com/xyz-raster-sources/styles/openstreetmap.json", style -> {
-                this.symbolManager = new SymbolManager(map, mlMap, style);
+                this.symbolManager = new SymbolManager(mapView, mlMap, style);
                 this.symbolManager.setIconAllowOverlap(true);
+
+                mlMap.addOnMapLongClickListener(coordinate -> {
+                    if (preferences.getBoolean(context.getString(R.string.pref_tap_duration), false)) {
+                        createMarker(coordinate);
+                        return true;
+                    }
+                    return false;
+                });
+
+                mlMap.addOnMapClickListener(coordinate -> {
+                    if (!preferences.getBoolean(context.getString(R.string.pref_tap_duration), false)) {
+                        createMarker(coordinate);
+                        return true;
+                    }
+                    return false;
+                });
+
                 this.symbolManager.addClickListener(clickedSymbol -> {
                     selectMarker(clickedSymbol, false);
                     return true;
@@ -126,16 +146,6 @@ public class MapNeo {
 //        map.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
 //        map.setMultiTouchControls(true);
 //        map.setTilesScaledToDpi(true);
-
-        // Initial location and zoom
-//        Configuration.getInstance().setAnimationSpeedShort(250);
-//        Configuration.getInstance().setAnimationSpeedDefault(250);
-
-        // TODO
-//        mapController = map.getController();
-//        mapController.setZoom(17.0);
-//        GeoPoint startPoint = new GeoPoint(53.563, 9.9866);
-//        mapController.setCenter(startPoint);
 
         createOverlays((BitmapDrawable) locationIcon, (BitmapDrawable) arrowIcon);
     }
@@ -161,78 +171,8 @@ public class MapNeo {
     }
 
     private void createOverlays(BitmapDrawable locationIcon, BitmapDrawable arrowIcon) {
-        // TODO create layer for icons
-//        // Add location icon
-//        gpsLocationProvider = new GpsMyLocationProvider(context);
-//        locationOverlay = new MyLocationNewOverlay(gpsLocationProvider, map);
-//        enableLocationsOverlay();
-//        locationOverlay.setPersonIcon(locationIcon.getBitmap());
-//        locationOverlay.setDirectionIcon(arrowIcon.getBitmap());
-//        locationOverlay.setDirectionAnchor(.5f, .5f);
-//        locationOverlay.setPersonAnchor(32, 32);
-//        map.getOverlays().add(this.locationOverlay);
-//
-//        // Add rotation overlay
-//        rotationGestureOverlay = new SnappableRotationOverlay(map);
-//        rotationGestureOverlay.setRotationActionListener(this::saveMapRotationProperty);
-//        map.setMultiTouchControls(true);
-//        map.getOverlays().add(rotationGestureOverlay);
-//
-//        // Add scale bar
-//        final DisplayMetrics dm = context.getResources().getDisplayMetrics();
-//        ScaleBarOverlay scaleBarOverlay = new ScaleBarOverlay(map);
-//        scaleBarOverlay.setCentred(true);
-//        scaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 20);
-//        map.getOverlays().add(scaleBarOverlay);
-//
-//        // Add symbol click listener. Will be called when the user clicks/taps on a symbol.
-//        markerClickListener = (symbol, mapView) -> {
-//            if (symbol instanceof Symbol) {
-//                selectMarker((Symbol) symbol, false);
-//                return true;
-//            }
-//            Toast.makeText(context, "Marker " + GeoNotesSymbol.getNoteId(symbol) + " is NOT a Symbol", Toast.LENGTH_LONG).show();
-//            return false;
-//        };
-//
-//        // React to touches on the map
-//        MapEventsReceiver mapEventsReceiver = new MapEventsReceiver() {
-//            @Override
-//            public boolean singleTapConfirmedHelper(GeoPoint p) {
-//                if (!preferences.getBoolean(context.getString(R.string.pref_tap_duration), false)) {
-//                    createMarker(p);
-//                }
-//
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean longPressHelper(GeoPoint p) {
-//                if (preferences.getBoolean(context.getString(R.string.pref_tap_duration), false)) {
-//                    createMarker(p);
-//                }
-//
-//                return false;
-//            }
-//
-//            private void createMarker(GeoPoint p) {
-//                // No symbol to move here -> deselect or create symbol
-//                // (selecting symbol on the map is handles via the separate markerClickListener)
-//                if (markerFragment.getSelectedMarker() != null) {
-//                    // Deselect selected symbol:
-//                    setIcon(markerFragment.getSelectedMarker(), false);
-//                }
-//
-//                // Create new symbol at this location and select it
-//                initAndSelectMarker(p);
-//            }
-//        };
-//        map.getOverlays().add(new MapEventsOverlay(mapEventsReceiver));
-//
-//        // Add compass after mapEventReceiver so that a click on the compass does not create a new note
-//        compassOverlay = new ClickableMapCompass(context, rotationGestureOverlay, map);
-//        compassOverlay.enableCompass();
-//        map.getOverlays().add(compassOverlay);
+        // TODO Add scalebar (?)
+        // TODO Add current location layer (?)
     }
 
     public void enableLocationsOverlay() {
@@ -253,51 +193,52 @@ public class MapNeo {
     }
 
     // TODO Add handler for all the actions (tap, drag, etc.)
-//    @SuppressLint("ClickableViewAccessibility")
-//    public void addMapListener(MapListener listener, TouchDownListener touchDownListener, NoteMovedListener noteMovedCallback) {
-//        map.addMapListener(listener);
-//        map.setOnTouchListener((v, event) -> {
-//            switch (event.getAction()) {
-//                case MotionEvent.ACTION_DOWN:
-//                    touchDownListener.onTouchedDown();
-//
-//                    // Initialize movement of the symbol: Store current screen-location to keep symbol there
-//                    if (markerToMove != null) {
-//                        dragStartMarkerPosition = map.getProjection().toPixels(markerToMove.getPosition(), null);
+    @SuppressLint("ClickableViewAccessibility")
+    public void addMapListener(TouchDownListener touchDownListener, NoteMovedListener noteMovedCallback) {
+        mapView.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    touchDownListener.onTouchedDown();
+
+                    // TODO Initialize movement of the symbol: Store current screen-location to keep symbol there
+//                    if (symbolToMove != null) {
+//                        // TODO Determine pixel<->coordinate mapping in maplibre:
+//                        dragStartMarkerPosition = map.getProjection().toPixels(symbolToMove.getPosition(), null);
 //                    }
-//                    break;
-//                case MotionEvent.ACTION_MOVE:
-//                    // When in drag-mode: Keep symbol at original screen location by setting its position
-//                    if (markerToMove != null && dragStartMarkerPosition != null) {
-//                        markerToMove.setPosition((GeoPoint) map.getProjection().fromPixels(dragStartMarkerPosition.x, dragStartMarkerPosition.y));
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    // TODO When in drag-mode: Keep symbol at original screen location by setting its position
+//                    if (symbolToMove != null && dragStartMarkerPosition != null) {
+//                        symbolToMove.setPosition((GeoPoint) map.getProjection().fromPixels(dragStartMarkerPosition.x, dragStartMarkerPosition.y));
 //                    }
-//                    break;
-//                case MotionEvent.ACTION_UP:
-//                    if (markerToMove != null) {
-//                        selectMarker(markerToMove, false);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    // TODO
+//                    if (symbolToMove != null) {
+//                        selectMarker(symbolToMove, false);
 //
 //                        // If the ID is set, the symbol exists in the DB, therefore we store that new location
-//                        String id = markerToMove.getId();
+//                        String id = symbolToMove.getId();
 //                        Double longitude = null;
 //                        Double latitude = null;
 //                        if (id != null) {
-//                            database.updateNoteLocation(Long.parseLong(id), markerToMove.getPosition());
-//                            longitude = markerToMove.getPosition().getLongitude();
-//                            latitude = markerToMove.getPosition().getLatitude();
+//                            database.updateNoteLocation(Long.parseLong(id), symbolToMove.getPosition());
+//                            longitude = symbolToMove.getPosition().getLongitude();
+//                            latitude = symbolToMove.getPosition().getLatitude();
 //                        }
 //
 //                        dragStartMarkerPosition = null;
-//                        markerToMove = null;
+//                        symbolToMove = null;
 //
 //                        if (id != null) {
 //                            noteMovedCallback.onNoteMoved(id, longitude, latitude);
 //                        }
 //                    }
-//                    break;
-//            }
-//            return false;
-//        });
-//    }
+                    break;
+            }
+            return false;
+        });
+    }
 
     private void addMarkerFragmentEventHandler(MarkerFragmentNeo fragment) {
         fragment.addEventHandler(new MarkerFragmentNeo.SymbolFragmentEventHandler() {
@@ -324,7 +265,7 @@ public class MapNeo {
 
             @Override
             public void onMove(Symbol symbol) {
-                markerToMove = symbol;
+                symbolToMove = symbol;
                 redraw();
             }
 
@@ -517,9 +458,29 @@ public class MapNeo {
 //        mapController.setZoom(zoom);
 //    }
 
-    /**
-     * Just creates a new symbol and adds it to the map overlay. No database operations or selection is performed.
-     */
+    private void createMarker(LatLng location) {
+        // No marker to move here -> deselect or create marker
+        // (selecting marker on the map is handles via the separate markerClickListener)
+        if (markerFragment.getSelectedSymbol() != null) {
+            // Deselect selected marker:
+            setIcon(markerFragment.getSelectedSymbol(), false);
+        }
+
+        // Create new marker at this location and select it
+        long categoryId = preferences.getLong(context.getString(R.string.pref_last_category_id), 1);
+
+        long id = database.addNote("", location.getLatitude(), location.getLongitude(), categoryId);
+        Note note = database.getNote(id);
+
+        // TODO
+//        if (snapNoteToGps) {
+//            location = snapToGpsLocation(location);
+//        }
+
+        Symbol newSymbol = createMarker(note);
+        selectMarker(newSymbol, true);
+    }
+
     private Symbol createMarker(Note note) {
         boolean hasPhoto = database.hasPhotos(note.getId());
 
