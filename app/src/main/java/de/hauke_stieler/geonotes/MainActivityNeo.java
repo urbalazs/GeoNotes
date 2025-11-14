@@ -1,7 +1,6 @@
 package de.hauke_stieler.geonotes;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -25,7 +24,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.CameraSelector;
@@ -33,6 +31,7 @@ import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.LifecycleCameraController;
+import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -55,13 +54,10 @@ import de.hauke_stieler.geonotes.common.ExifHelper;
 import de.hauke_stieler.geonotes.common.FileHelper;
 import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
-import de.hauke_stieler.geonotes.databinding.ActivityMainBinding;
 import de.hauke_stieler.geonotes.export.BackupImportDialog;
 import de.hauke_stieler.geonotes.export.Exporter;
-import de.hauke_stieler.geonotes.map.GeoNotesMarker;
 import de.hauke_stieler.geonotes.map.GeoNotesSymbol;
 import de.hauke_stieler.geonotes.map.MapNeo;
-import de.hauke_stieler.geonotes.map.MarkerFragment;
 import de.hauke_stieler.geonotes.map.MarkerFragmentNeo;
 import de.hauke_stieler.geonotes.note_list.NoteListActivity;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
@@ -84,7 +80,6 @@ public class MainActivityNeo extends AppCompatActivity {
     private Exporter exporter;
     private Toolbar toolbar;
     private NoteIconProvider noteIconProvider;
-    private ActivityMainBinding viewBinding;
     private LifecycleCameraController cameraController;
     private Bundle savedInstanceState;
     private BroadcastReceiver gpsSwitchStateReceiver;
@@ -96,10 +91,6 @@ public class MainActivityNeo extends AppCompatActivity {
         MapLibre.getInstance(this);
 
         Injector.registerActivity(this);
-
-        // TODO needed for camera, but is this really necessary?
-//        viewBinding = ActivityMainBinding.inflate(getLayoutInflater());
-//        setContentView(viewBinding.getRoot());
 
         LayoutInflater inflater = LayoutInflater.from(this);
         View rootView = inflater.inflate(R.layout.activity_main_neo, null);
@@ -481,7 +472,9 @@ public class MainActivityNeo extends AppCompatActivity {
         try {
             cameraController.bindToLifecycle(this);
             cameraController.setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA);
-            viewBinding.cameraPreview.setController(cameraController);
+            PreviewView cameraPreview = findViewById(R.id.camera_preview);
+            cameraPreview.setController(cameraController);
+            // viewBinding.cameraPreview.setController(cameraController);
         } catch (Exception e) {
             Log.e("startCamera", "Error while unbinding and binding camera lifecycle: ", e);
             throw new RuntimeException(e);

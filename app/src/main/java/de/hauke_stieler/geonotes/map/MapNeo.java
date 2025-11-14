@@ -19,9 +19,7 @@ import com.google.gson.JsonObject;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.maps.MapLibreMap;
-import org.maplibre.android.maps.MapLibreMapOptions;
 import org.maplibre.android.maps.MapView;
-import org.maplibre.android.maps.UiSettings;
 import org.maplibre.android.plugins.annotation.Symbol;
 import org.maplibre.android.plugins.annotation.SymbolManager;
 import org.maplibre.android.plugins.annotation.SymbolOptions;
@@ -491,8 +489,6 @@ public class MapNeo {
     }
 
     public void onResume() {
-        // TODO Necessary with maplibre?
-//        map.onResume();
         if (!wakeLock.isHeld()) {
             wakeLock.acquire();
         }
