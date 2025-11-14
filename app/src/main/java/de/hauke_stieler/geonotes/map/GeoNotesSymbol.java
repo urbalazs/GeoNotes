@@ -90,4 +90,8 @@ public class GeoNotesSymbol {
     public static void setDescription(Symbol symbol, String newDescription) {
         symbol.getData().getAsJsonObject().addProperty(DATA_KEY_DESCRIPTION, newDescription);
     }
+
+    public static void setCategoryId(Symbol symbol, long newCategoryId) {
+        symbol.getData().getAsJsonObject().addProperty(DATA_KEY_CATEGORY, newCategoryId);
+    }
 }

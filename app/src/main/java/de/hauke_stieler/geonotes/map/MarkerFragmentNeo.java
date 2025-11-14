@@ -147,8 +147,7 @@ public class MarkerFragmentNeo extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Category selectedCategory = categorySpinnerAdapter.getItem(position);
-                // TODO
-//                selectedSymbol.setCategoryId(selectedCategory.getId());
+                GeoNotesSymbol.setCategoryId(selectedSymbol, selectedCategory.getId());
                 if (symbolEventHandler != null) {
                     symbolEventHandler.onCategoryChanged(selectedSymbol);
                 }
