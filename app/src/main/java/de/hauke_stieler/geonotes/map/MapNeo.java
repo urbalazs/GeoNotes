@@ -19,7 +19,9 @@ import com.google.gson.JsonObject;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.maps.MapLibreMap;
+import org.maplibre.android.maps.MapLibreMapOptions;
 import org.maplibre.android.maps.MapView;
+import org.maplibre.android.maps.UiSettings;
 import org.maplibre.android.plugins.annotation.Symbol;
 import org.maplibre.android.plugins.annotation.SymbolManager;
 import org.maplibre.android.plugins.annotation.SymbolOptions;
@@ -139,6 +141,7 @@ public class MapNeo {
             });
 
             mlMap.setCameraPosition(new CameraPosition.Builder().target(new LatLng(0.0, 0.0)).zoom(1.0).build());
+            mlMap.getUiSettings().setDisableRotateWhenScaling(true);
         });
 
         // TODO map configuration necessary here?

@@ -119,11 +119,6 @@ public class MainActivityNeo extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // TODO With MapLibre necessary this way or are there other ways for the copyright label?
-        // Set HTML text of copyright label
-//        ((TextView) findViewById(R.id.copyright)).setMovementMethod(LinkMovementMethod.getInstance());
-//        ((TextView) findViewById(R.id.copyright)).setText(Html.fromHtml(getString(R.string.osm_contribution)));
-
         String storagePermission = "";
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             storagePermission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -363,16 +358,13 @@ public class MainActivityNeo extends AppCompatActivity {
 //            }
 //        }, 500);
 
-        // TODO Testing: Map interaction -> End GPS-follow mode
-        @SuppressLint("RestrictedApi")
         MapNeo.TouchDownListener touchDownCallback = () -> {
-            ActionMenuItemView menuItem = findViewById(R.id.toolbar_btn_gps_follow);
+            MenuItem menuItem = toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow);
             if (menuItem != null) {
-                menuItem.setIcon(getResources().getDrawable(R.drawable.ic_location_searching));
+                menuItem.setIcon(R.drawable.ic_location_searching);
             }
         };
 
-        // TODO Note moves -> adjust EXIF data in photos
         MapNeo.NoteMovedListener noteMovedCallback = (noteId, longitude, latitude) -> {
             File externalFilesDir = getExternalFilesDir(FileHelper.GEONOTES_EXTERNAL_DIR_NAME);
             database.getPhotos(noteId).forEach(photo -> {
