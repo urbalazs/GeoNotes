@@ -100,6 +100,15 @@ public class NoteStore {
         db.update(NOTES_TABLE_NAME, values, NOTES_COL_ID + " = ?", new String[]{"" + id});
     }
 
+    public void updateLocation(SQLiteDatabase db, long id, double lat, double lng) {
+        ContentValues values = new ContentValues();
+        values.put(NOTES_COL_ID, id);
+        values.put(NOTES_COL_LAT, lat);
+        values.put(NOTES_COL_LON, lng);
+
+        db.update(NOTES_TABLE_NAME, values, NOTES_COL_ID + " = ?", new String[]{"" + id});
+    }
+
     public void removeNote(SQLiteDatabase db, long id) {
         db.delete(NOTES_TABLE_NAME, NOTES_COL_ID + " = ?", new String[]{"" + id});
     }

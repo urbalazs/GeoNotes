@@ -4,11 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.PowerManager;
-import android.view.MotionEvent;
 import android.view.WindowManager;
 
 import androidx.core.content.res.ResourcesCompat;
@@ -19,6 +18,7 @@ import com.google.gson.JsonObject;
 
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
+import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.plugins.annotation.Symbol;
 import org.maplibre.android.plugins.annotation.SymbolManager;
@@ -32,7 +32,6 @@ import java.util.List;
 import de.hauke_stieler.geonotes.Injector;
 import de.hauke_stieler.geonotes.R;
 import de.hauke_stieler.geonotes.common.BitmapRenderer;
-import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
@@ -43,7 +42,7 @@ public class MapNeo {
     }
 
     public interface NoteMovedListener {
-        void onNoteMoved(String value, Double longitude, Double latitude);
+        void onNoteMoved(Long value, Double longitude, Double latitude);
     }
 
     private final Context context;
@@ -65,7 +64,7 @@ public class MapNeo {
 
     // Variables used during moving a symbol. Do not use when no symbol is currently in move mode (aka when markerToMove==null)
     private Symbol symbolToMove;
-    private Point dragStartMarkerPosition;
+    private PointF dragStartMarkerPosition;
 
     // TODO needed in maplibre map?
 //    private SnappableRotationOverlay rotationGestureOverlay;
@@ -138,6 +137,7 @@ public class MapNeo {
 
                 reloadAllNotes();
             });
+
             mlMap.setCameraPosition(new CameraPosition.Builder().target(new LatLng(0.0, 0.0)).zoom(1.0).build());
         });
 
@@ -192,51 +192,45 @@ public class MapNeo {
 //        compassOverlay.setPointerMode(rotatingMapEnabled);
     }
 
-    // TODO Add handler for all the actions (tap, drag, etc.)
     @SuppressLint("ClickableViewAccessibility")
     public void addMapListener(TouchDownListener touchDownListener, NoteMovedListener noteMovedCallback) {
-        mapView.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    touchDownListener.onTouchedDown();
+        mapView.getMapAsync(mlMap -> {
+            mlMap.addOnCameraMoveStartedListener(reason -> {
+                touchDownListener.onTouchedDown();
 
-                    // TODO Initialize movement of the symbol: Store current screen-location to keep symbol there
-//                    if (symbolToMove != null) {
-//                        // TODO Determine pixel<->coordinate mapping in maplibre:
-//                        dragStartMarkerPosition = map.getProjection().toPixels(symbolToMove.getPosition(), null);
-//                    }
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    // TODO When in drag-mode: Keep symbol at original screen location by setting its position
-//                    if (symbolToMove != null && dragStartMarkerPosition != null) {
-//                        symbolToMove.setPosition((GeoPoint) map.getProjection().fromPixels(dragStartMarkerPosition.x, dragStartMarkerPosition.y));
-//                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    // TODO
-//                    if (symbolToMove != null) {
-//                        selectMarker(symbolToMove, false);
-//
-//                        // If the ID is set, the symbol exists in the DB, therefore we store that new location
-//                        String id = symbolToMove.getId();
-//                        Double longitude = null;
-//                        Double latitude = null;
-//                        if (id != null) {
-//                            database.updateNoteLocation(Long.parseLong(id), symbolToMove.getPosition());
-//                            longitude = symbolToMove.getPosition().getLongitude();
-//                            latitude = symbolToMove.getPosition().getLatitude();
-//                        }
-//
-//                        dragStartMarkerPosition = null;
-//                        symbolToMove = null;
-//
-//                        if (id != null) {
-//                            noteMovedCallback.onNoteMoved(id, longitude, latitude);
-//                        }
-//                    }
-                    break;
-            }
-            return false;
+                boolean userMovedMap = reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE;
+                if (symbolToMove != null && userMovedMap) {
+                    dragStartMarkerPosition = mlMap.getProjection().toScreenLocation(symbolToMove.getLatLng());
+                }
+            });
+            mlMap.addOnCameraMoveListener(() -> {
+                if (symbolToMove != null) {
+                    symbolToMove.setLatLng(mlMap.getProjection().fromScreenLocation(dragStartMarkerPosition));
+                    this.symbolManager.update(symbolToMove);
+                }
+            });
+            mlMap.addOnCameraIdleListener(() -> {
+                if (symbolToMove != null) {
+                    selectMarker(symbolToMove, false);
+
+                    // If the ID is set, the symbol exists in the DB, therefore we store that new location
+                    Long id = GeoNotesSymbol.getNoteId(symbolToMove);
+                    Double longitude = null;
+                    Double latitude = null;
+                    if (id != null) { // TODO wirklich nicht nötig, da ID immer !=null? was ist mit neuen notes?
+                        latitude = symbolToMove.getLatLng().getLatitude();
+                        longitude = symbolToMove.getLatLng().getLongitude();
+                        database.updateNoteLocation(id, latitude, longitude);
+                    }
+
+                    dragStartMarkerPosition = null;
+                    symbolToMove = null;
+
+                    if (id != null) {
+                        noteMovedCallback.onNoteMoved(id, longitude, latitude);
+                    }
+                }
+            });
         });
     }
 

@@ -78,6 +78,10 @@ public class Database extends SQLiteOpenHelper {
         noteStore.updateLocation(getWritableDatabase(), noteId, location);
     }
 
+    public void updateNoteLocation(long noteId, double lat, double lng) {
+        noteStore.updateLocation(getWritableDatabase(), noteId, lat, lng);
+    }
+
     public void removeNote(long id) {
         noteStore.removeNote(getWritableDatabase(), id);
     }
@@ -113,6 +117,10 @@ public class Database extends SQLiteOpenHelper {
     }
 
     public List<String> getPhotos(String noteId) {
+        return photoStore.getPhotos(getReadableDatabase(), noteId);
+    }
+
+    public List<String> getPhotos(Long noteId) {
         return photoStore.getPhotos(getReadableDatabase(), noteId);
     }
 
