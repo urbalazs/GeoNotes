@@ -8,8 +8,10 @@ import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.PowerManager;
+import android.util.Log;
 import android.view.WindowManager;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.BlendModeColorFilterCompat;
 import androidx.core.graphics.BlendModeCompat;
@@ -18,6 +20,8 @@ import com.google.gson.JsonObject;
 
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
+import org.maplibre.android.gestures.RotateGestureDetector;
+import org.maplibre.android.location.CompassListener;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.plugins.annotation.Symbol;
@@ -37,6 +41,7 @@ import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 
 public class MapNeo {
+
     public interface TouchDownListener {
         void onTouchedDown();
     }
@@ -68,8 +73,9 @@ public class MapNeo {
 
     // TODO needed in maplibre map?
 //    private SnappableRotationOverlay rotationGestureOverlay;
-    // TODO needed?
-//    private ClickableMapCompass compassOverlay;
+
+    private TouchDownListener touchDownListener;
+    private NoteMovedListener noteMovedCallback;
 
     public MapNeo(Context context,
                   MapView mapView,
@@ -138,15 +144,63 @@ public class MapNeo {
                 reloadAllNotes();
             });
 
+            mlMap.addOnRotateListener(new MapLibreMap.OnRotateListener() {
+                @Override
+                public void onRotateBegin(@NonNull RotateGestureDetector rotateGestureDetector) {
+                }
+
+                @Override
+                public void onRotate(@NonNull RotateGestureDetector rotateGestureDetector) {
+                    saveMapRotationProperty((float) mlMap.getCameraPosition().bearing);
+                }
+
+                @Override
+                public void onRotateEnd(@NonNull RotateGestureDetector rotateGestureDetector) {
+                }
+            });
+
+            mlMap.addOnCameraMoveStartedListener(reason -> {
+                if(touchDownListener != null){
+                    touchDownListener.onTouchedDown();
+                }
+
+                boolean userMovedMap = reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE;
+                if (symbolToMove != null && userMovedMap) {
+                    dragStartMarkerPosition = mlMap.getProjection().toScreenLocation(symbolToMove.getLatLng());
+                }
+            });
+            mlMap.addOnCameraMoveListener(() -> {
+                if (symbolToMove != null) {
+                    symbolToMove.setLatLng(mlMap.getProjection().fromScreenLocation(dragStartMarkerPosition));
+                    this.symbolManager.update(symbolToMove);
+                }
+            });
+            mlMap.addOnCameraIdleListener(() -> {
+                if (symbolToMove != null) {
+                    selectMarker(symbolToMove, false);
+
+                    // If the ID is set, the symbol exists in the DB, therefore we store that new location
+                    Long id = GeoNotesSymbol.getNoteId(symbolToMove);
+                    double latitude = symbolToMove.getLatLng().getLatitude();
+                    double longitude = symbolToMove.getLatLng().getLongitude();
+                    database.updateNoteLocation(id, latitude, longitude);
+
+                    dragStartMarkerPosition = null;
+                    symbolToMove = null;
+
+                    if(noteMovedCallback != null) {
+                        noteMovedCallback.onNoteMoved(id, longitude, latitude);
+                    }
+                }
+
+                // Resetting the map rotation with the compass-icon also triggers this event and we
+                // want to store the new rotation
+                saveMapRotationProperty((float) mlMap.getCameraPosition().bearing);
+            });
+
             mlMap.setCameraPosition(new CameraPosition.Builder().target(new LatLng(0.0, 0.0)).zoom(1.0).build());
             mlMap.getUiSettings().setDisableRotateWhenScaling(true);
         });
-
-        // TODO map configuration necessary here?
-//        Configuration.getInstance().setUserAgentValue(context.getPackageName());
-//        map.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
-//        map.setMultiTouchControls(true);
-//        map.setTilesScaledToDpi(true);
 
         createOverlays((BitmapDrawable) locationIcon, (BitmapDrawable) arrowIcon);
     }
@@ -188,51 +242,20 @@ public class MapNeo {
     }
 
     public void updateMapRotation(boolean rotatingMapEnabled, float angle) {
-        // TODO needed in maplibre map?
-//        rotationGestureOverlay.setEnabledAndRotation(rotatingMapEnabled, angle);
-//        compassOverlay.setPointerMode(rotatingMapEnabled);
+        mapView.getMapAsync(mlMap -> {
+            CameraPosition oldCameraPosition = mlMap.getCameraPosition();
+            CameraPosition newCameraPosition = new CameraPosition.Builder(oldCameraPosition)
+                    .bearing(angle)
+                    .build();
+            mlMap.setCameraPosition(newCameraPosition);
+            mlMap.getUiSettings().setRotateGesturesEnabled(rotatingMapEnabled);
+        });
     }
 
     @SuppressLint("ClickableViewAccessibility")
     public void addMapListener(TouchDownListener touchDownListener, NoteMovedListener noteMovedCallback) {
-        mapView.getMapAsync(mlMap -> {
-            mlMap.addOnCameraMoveStartedListener(reason -> {
-                touchDownListener.onTouchedDown();
-
-                boolean userMovedMap = reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE;
-                if (symbolToMove != null && userMovedMap) {
-                    dragStartMarkerPosition = mlMap.getProjection().toScreenLocation(symbolToMove.getLatLng());
-                }
-            });
-            mlMap.addOnCameraMoveListener(() -> {
-                if (symbolToMove != null) {
-                    symbolToMove.setLatLng(mlMap.getProjection().fromScreenLocation(dragStartMarkerPosition));
-                    this.symbolManager.update(symbolToMove);
-                }
-            });
-            mlMap.addOnCameraIdleListener(() -> {
-                if (symbolToMove != null) {
-                    selectMarker(symbolToMove, false);
-
-                    // If the ID is set, the symbol exists in the DB, therefore we store that new location
-                    Long id = GeoNotesSymbol.getNoteId(symbolToMove);
-                    Double longitude = null;
-                    Double latitude = null;
-                    if (id != null) { // TODO wirklich nicht nötig, da ID immer !=null? was ist mit neuen notes?
-                        latitude = symbolToMove.getLatLng().getLatitude();
-                        longitude = symbolToMove.getLatLng().getLongitude();
-                        database.updateNoteLocation(id, latitude, longitude);
-                    }
-
-                    dragStartMarkerPosition = null;
-                    symbolToMove = null;
-
-                    if (id != null) {
-                        noteMovedCallback.onNoteMoved(id, longitude, latitude);
-                    }
-                }
-            });
-        });
+        this.touchDownListener = touchDownListener;
+        this.noteMovedCallback = noteMovedCallback;
     }
 
     private void addMarkerFragmentEventHandler(MarkerFragmentNeo fragment) {
