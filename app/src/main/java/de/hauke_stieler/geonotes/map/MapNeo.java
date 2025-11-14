@@ -8,7 +8,6 @@ import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.PowerManager;
-import android.util.Log;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
@@ -21,7 +20,6 @@ import com.google.gson.JsonObject;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.gestures.RotateGestureDetector;
-import org.maplibre.android.location.CompassListener;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.plugins.annotation.Symbol;
@@ -36,6 +34,7 @@ import java.util.List;
 import de.hauke_stieler.geonotes.Injector;
 import de.hauke_stieler.geonotes.R;
 import de.hauke_stieler.geonotes.common.BitmapRenderer;
+import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
@@ -151,7 +150,7 @@ public class MapNeo {
 
                 @Override
                 public void onRotate(@NonNull RotateGestureDetector rotateGestureDetector) {
-                    saveMapRotationProperty((float) mlMap.getCameraPosition().bearing);
+                    saveMapProperties(mlMap);
                 }
 
                 @Override
@@ -160,7 +159,7 @@ public class MapNeo {
             });
 
             mlMap.addOnCameraMoveStartedListener(reason -> {
-                if(touchDownListener != null){
+                if (touchDownListener != null) {
                     touchDownListener.onTouchedDown();
                 }
 
@@ -188,14 +187,14 @@ public class MapNeo {
                     dragStartMarkerPosition = null;
                     symbolToMove = null;
 
-                    if(noteMovedCallback != null) {
+                    if (noteMovedCallback != null) {
                         noteMovedCallback.onNoteMoved(id, longitude, latitude);
                     }
                 }
 
                 // Resetting the map rotation with the compass-icon also triggers this event and we
                 // want to store the new rotation
-                saveMapRotationProperty((float) mlMap.getCameraPosition().bearing);
+                saveMapProperties(mlMap);
             });
 
             mlMap.setCameraPosition(new CameraPosition.Builder().target(new LatLng(0.0, 0.0)).zoom(1.0).build());
@@ -235,9 +234,21 @@ public class MapNeo {
 //        locationOverlay.enableMyLocation();
     }
 
-    private void saveMapRotationProperty(float angle) {
+    private void saveMapProperties(MapLibreMap mlMap) {
         SharedPreferences.Editor editor = preferences.edit();
+
+        CameraPosition mapPos = mlMap.getCameraPosition();
+
+        float angle = (float) mapPos.bearing;
         editor.putFloat(context.getString(R.string.pref_map_rotation), angle);
+
+        float zoom = (float) mapPos.zoom;
+        editor.putFloat(context.getString(R.string.pref_last_location_zoom), zoom);
+
+        double latitude = mapPos.target.getLatitude();
+        editor.putFloat(context.getString(R.string.pref_last_location_lat), (float) latitude);
+        editor.putFloat(context.getString(R.string.pref_last_location_lon), (float) mapPos.target.getLongitude());
+
         editor.commit();
     }
 
@@ -461,18 +472,28 @@ public class MapNeo {
     private void zoomToSelectedMarker() {
         // Before resuming (e.g. when switching back from the list of notes to the main activity),
         // the map doesn't zoom to markers. Therefore we here zoom to the currently selected symbol.
-        // TODO
-//        Marker selectedMarker = getSelectedMarker();
-//        if (selectedMarker != null) {
-//            zoomToLocation(selectedMarker.getPosition(), map.getZoomLevelDouble());
-//        }
+        Symbol selectedSymbol = getSelectedSymbol();
+        if(selectedSymbol != null){
+            zoomToLocation(selectedSymbol.getLatLng());
+        }
     }
 
-    // TODO
-//    private void zoomToLocation(IGeoPoint p, double zoom) {
-//        mapController.setCenter(new GeoPoint(p));
-//        mapController.setZoom(zoom);
-//    }
+    private void zoomToLocation(LatLng p) {
+        mapView.getMapAsync(mlMap -> {
+            zoomToLocation(p, mlMap.getCameraPosition().zoom);
+        });
+    }
+
+    private void zoomToLocation(LatLng p, double zoom) {
+        mapView.getMapAsync(mlMap -> {
+            CameraPosition oldCameraPosition = mlMap.getCameraPosition();
+            CameraPosition newCameraPosition = new CameraPosition.Builder(oldCameraPosition)
+                    .zoom(zoom)
+                    .target(p)
+                    .build();
+            mlMap.setCameraPosition(newCameraPosition);
+        });
+    }
 
     private void createMarker(LatLng location) {
         // No marker to move here -> deselect or create marker
@@ -538,8 +559,7 @@ public class MapNeo {
     }
 
     public void setLocation(float lat, float lon, float zoom) {
-        // TODO
-//        zoomToLocation(new GeoPoint(lat, lon), zoom);
+        zoomToLocation(new LatLng(lat, lon), zoom);
     }
 
     public float getZoom() {

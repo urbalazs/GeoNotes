@@ -334,21 +334,6 @@ public class MainActivityNeo extends AppCompatActivity {
     }
 
     private void addMapListener() {
-        // TODO store location on zoom
-//        DelayedMapListener delayedMapListener = new DelayedMapListener(new MapListener() {
-//            @Override
-//            public boolean onScroll(ScrollEvent event) {
-//                storeLocation();
-//                return true;
-//            }
-//
-//            @Override
-//            public boolean onZoom(ZoomEvent event) {
-//                storeLocation();
-//                return true;
-//            }
-//        }, 500);
-
         MapNeo.TouchDownListener touchDownCallback = () -> {
             MenuItem menuItem = toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow);
             if (menuItem != null) {
@@ -615,18 +600,5 @@ public class MainActivityNeo extends AppCompatActivity {
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), R.string.note_list_create_thumbnail_failed, Toast.LENGTH_SHORT);
         }
-    }
-
-    /**
-     * Stores the current map location and zoom in the shared preferences.
-     */
-    private void storeLocation() {
-        GeoPoint location = map.getLocation();
-        float zoom = map.getZoom();
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putFloat(getString(R.string.pref_last_location_lat), (float) location.getLatitude());
-        editor.putFloat(getString(R.string.pref_last_location_lon), (float) location.getLongitude());
-        editor.putFloat(getString(R.string.pref_last_location_zoom), zoom);
-        editor.commit();
     }
 }
