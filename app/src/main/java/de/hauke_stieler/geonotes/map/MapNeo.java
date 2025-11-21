@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.PowerManager;
 import android.view.WindowManager;
 
@@ -73,7 +75,7 @@ public class MapNeo {
     private final MarkerFragmentNeo markerFragment;
 //    private Marker.OnMarkerClickListener markerClickListener;
 
-    private boolean snapNoteToGps;
+    private final int snapToGpsPixelTolerance = 50;
 
     // Variables used during moving a symbol. Do not use when no symbol is currently in move mode (aka when markerToMove==null)
     private Symbol symbolToMove;
@@ -128,7 +130,15 @@ public class MapNeo {
                 this.symbolManager.setIconAllowOverlap(true);
 
                 mlMap.addOnMapLongClickListener(coordinate -> {
-                    if (preferences.getBoolean(context.getString(R.string.pref_tap_duration), false)) {
+                    boolean useLongTap = preferences.getBoolean(context.getString(R.string.pref_tap_duration), false);
+                    if (useLongTap) {
+                        boolean snapToGpsPosition = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
+                        Location lastKnownLocation = mlMap.getLocationComponent().getLastKnownLocation();
+                        if (snapToGpsPosition && lastKnownLocation != null) {
+                            LatLng lastKnownCoordinate = new LatLng(lastKnownLocation);
+                            // Handle snapping manually here, since the LocationComponent has no tolerance option
+                            coordinate = snapToGpsLocation(coordinate, lastKnownCoordinate);
+                        }
                         createMarker(coordinate);
                         return true;
                     }
@@ -136,7 +146,15 @@ public class MapNeo {
                 });
 
                 mlMap.addOnMapClickListener(coordinate -> {
-                    if (!preferences.getBoolean(context.getString(R.string.pref_tap_duration), false)) {
+                    boolean useNormalTap = !preferences.getBoolean(context.getString(R.string.pref_tap_duration), false);
+                    if (useNormalTap) {
+                        boolean snapToGpsPosition = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
+                        Location lastKnownLocation = mlMap.getLocationComponent().getLastKnownLocation();
+                        if (snapToGpsPosition && lastKnownLocation != null) {
+                            LatLng lastKnownCoordinate = new LatLng(lastKnownLocation);
+                            // Handle snapping manually here, since the LocationComponent has no tolerance option
+                            coordinate = snapToGpsLocation(coordinate, lastKnownCoordinate);
+                        }
                         createMarker(coordinate);
                         return true;
                     }
@@ -230,9 +248,6 @@ public class MapNeo {
 
         float mapScale = preferences.getFloat(context.getString(R.string.pref_map_scaling), 1.0f);
         setMapScaleFactor(mapScale);
-
-        boolean snapNoteToGps = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
-        setSnapNoteToGps(snapNoteToGps);
 
         boolean enableRotatingMap = preferences.getBoolean(context.getString(R.string.pref_enable_rotating_map), false);
         float mapRotation = preferences.getFloat(context.getString(R.string.pref_map_rotation), 0f);
@@ -390,32 +405,25 @@ public class MapNeo {
 //    }
 
     /**
-     * Tries to snap the location to the last known GPS of the distance on the screen is below 50dp.
-     * If no GPS location available or if the distance to the current GPS location is lower than 50dp, then the GPS location is returned, otherwise the input is returned.
+     * Tries to snap the given location to gpsLocation if it's close by.
      *
-     * @return The new location, snapped if possible.
+     * @return When the gpsLocation is close by, gpsLocation is returned. Otherwise, location is returned.
      */
-    // TODO
-//    private GeoPoint snapToGpsLocation(GeoPoint location) {
-//        if (gpsLocationProvider.getLastKnownLocation() == null) {
-//            return location;
-//        }
-//
-//        GeoPoint gpsLocation = new GeoPoint(gpsLocationProvider.getLastKnownLocation());
-//
-//        Point markerLocationOnScreen = map.getProjection().toPixels(location, null);
-//        Point gpsLocationOnScreen = map.getProjection().toPixels(gpsLocation, null);
-//
-//        int diffY = gpsLocationOnScreen.y - markerLocationOnScreen.y;
-//        int diffX = gpsLocationOnScreen.x - markerLocationOnScreen.x;
-//        double distanceOnScreen = Math.sqrt(diffY * diffY + diffX * diffX);
-//
-//        if (distanceOnScreen < 50) {
-//            location = gpsLocation;
-//        }
-//
-//        return location;
-//    }
+    private LatLng snapToGpsLocation(LatLng location, LatLng gpsLocation) {
+        PointF markerLocationOnScreen = mlMap.getProjection().toScreenLocation(location);
+        PointF gpsLocationOnScreen = mlMap.getProjection().toScreenLocation(gpsLocation);
+
+        float diffY = gpsLocationOnScreen.y - markerLocationOnScreen.y;
+        float diffX = gpsLocationOnScreen.x - markerLocationOnScreen.x;
+        double distanceOnScreen = Math.sqrt(diffY * diffY + diffX * diffX);
+
+        if (distanceOnScreen < snapToGpsPixelTolerance) {
+            location = gpsLocation;
+        }
+
+        return location;
+    }
+
     public void selectNote(long noteId) {
         for (int i = 0; i < this.symbolManager.getAnnotations().size(); i++) {
             Symbol symbol = this.symbolManager.getAnnotations().valueAt(i);
@@ -639,11 +647,15 @@ public class MapNeo {
         }
     }
 
-    public void addRequestPhotoHandler(MarkerFragmentNeo.RequestPhotoEventHandler requestPhotoEventHandler) {
-        this.markerFragment.addRequestPhotoHandler(requestPhotoEventHandler);
+    private boolean isLocationFollowModeActive() {
+        if (mlMap == null) {
+            return false;
+        }
+
+        return mlMap.getLocationComponent().getCameraMode() == CameraMode.TRACKING_GPS_NORTH;
     }
 
-    public void setSnapNoteToGps(boolean snapNoteToGps) {
-        this.snapNoteToGps = snapNoteToGps;
+    public void addRequestPhotoHandler(MarkerFragmentNeo.RequestPhotoEventHandler requestPhotoEventHandler) {
+        this.markerFragment.addRequestPhotoHandler(requestPhotoEventHandler);
     }
 }
