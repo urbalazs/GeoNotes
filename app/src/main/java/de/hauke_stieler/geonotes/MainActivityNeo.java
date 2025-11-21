@@ -57,7 +57,7 @@ import de.hauke_stieler.geonotes.export.BackupImportDialog;
 import de.hauke_stieler.geonotes.export.Exporter;
 import de.hauke_stieler.geonotes.map.GeoNotesSymbol;
 import de.hauke_stieler.geonotes.map.MapNeo;
-import de.hauke_stieler.geonotes.map.MarkerFragmentNeo;
+import de.hauke_stieler.geonotes.map.SymbolFragment;
 import de.hauke_stieler.geonotes.note_list.NoteListActivity;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 import de.hauke_stieler.geonotes.photo.ThumbnailUtil;
@@ -124,7 +124,7 @@ public class MainActivityNeo extends AppCompatActivity {
 
         addBackListener();
 
-        createMarkerFragment();
+        createSymbolFragment();
         createMap();
 
         gpsSwitchStateReceiver = new BroadcastReceiver() {
@@ -140,18 +140,18 @@ public class MainActivityNeo extends AppCompatActivity {
         this.savedInstanceState = savedInstanceState;
     }
 
-    private void createMarkerFragment() {
-        MarkerFragmentNeo markerFragment = (MarkerFragmentNeo) getSupportFragmentManager().findFragmentById(R.id.map_marker_fragment);
-        if (markerFragment == null) {
-            markerFragment = new MarkerFragmentNeo();
+    private void createSymbolFragment() {
+        SymbolFragment symbolFragment = (SymbolFragment) getSupportFragmentManager().findFragmentById(R.id.map_symbol_fragment);
+        if (symbolFragment == null) {
+            symbolFragment = new SymbolFragment();
 
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
-                    .add(R.id.map_marker_fragment, markerFragment, null)
+                    .add(R.id.map_symbol_fragment, symbolFragment, null)
                     .commit();
         }
 
-        markerFragment.setOnCreatedHandler(() -> {
+        symbolFragment.setOnCreatedHandler(() -> {
             if (savedInstanceState != null) {
                 long selectedNoteId = savedInstanceState.getLong(BUNDLE_KEY_SELECTED_NOTE_ID, -1);
                 if (selectedNoteId != -1) {
@@ -165,7 +165,7 @@ public class MainActivityNeo extends AppCompatActivity {
             }
         });
 
-        Injector.put(markerFragment);
+        Injector.put(symbolFragment);
     }
 
     private void createMap() {
@@ -425,7 +425,7 @@ public class MainActivityNeo extends AppCompatActivity {
 
         findViewById(R.id.toolbar).setVisibility(View.INVISIBLE);
         findViewById(R.id.main_layout).setVisibility(View.INVISIBLE);
-        findViewById(R.id.map_marker_fragment).setVisibility(View.INVISIBLE);
+        findViewById(R.id.map_symbol_fragment).setVisibility(View.INVISIBLE);
 
         findViewById(R.id.camera_layout).setVisibility(View.VISIBLE);
         findViewById(R.id.image_capture_button).setOnClickListener(view -> {
@@ -475,7 +475,7 @@ public class MainActivityNeo extends AppCompatActivity {
     private void closeCamera() {
         findViewById(R.id.toolbar).setVisibility(View.VISIBLE);
         findViewById(R.id.main_layout).setVisibility(View.VISIBLE);
-        findViewById(R.id.map_marker_fragment).setVisibility(View.VISIBLE);
+        findViewById(R.id.map_symbol_fragment).setVisibility(View.VISIBLE);
 
         findViewById(R.id.camera_layout).setVisibility(View.INVISIBLE);
 
@@ -513,7 +513,7 @@ public class MainActivityNeo extends AppCompatActivity {
                         addPositionToImageExifData(photoFile, longitude, latitude);
 
                         addPhotoToDatabase(noteId, photoFile);
-                        List<String> photosOfFragment = map.addImagesToMarkerFragment();
+                        List<String> photosOfFragment = map.addImagesToSymbolFragment();
 
                         ((TextView) findViewById(R.id.image_capture_image_count_label)).setText(photosOfFragment.size() + "");
 

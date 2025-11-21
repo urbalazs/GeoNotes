@@ -141,13 +141,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createMarkerFragment() {
-        MarkerFragment markerFragment = (MarkerFragment) getSupportFragmentManager().findFragmentById(R.id.map_marker_fragment);
+        MarkerFragment markerFragment = (MarkerFragment) getSupportFragmentManager().findFragmentById(R.id.map_symbol_fragment);
         if (markerFragment == null) {
             markerFragment = new MarkerFragment();
 
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
-                    .add(R.id.map_marker_fragment, markerFragment, null)
+                    .add(R.id.map_symbol_fragment, markerFragment, null)
                     .commit();
         }
 
@@ -455,7 +455,7 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.toolbar).setVisibility(View.INVISIBLE);
         findViewById(R.id.main_layout).setVisibility(View.INVISIBLE);
-        findViewById(R.id.map_marker_fragment).setVisibility(View.INVISIBLE);
+        findViewById(R.id.map_symbol_fragment).setVisibility(View.INVISIBLE);
 
         findViewById(R.id.camera_layout).setVisibility(View.VISIBLE);
         findViewById(R.id.image_capture_button).setOnClickListener(view -> {
@@ -504,7 +504,7 @@ public class MainActivity extends AppCompatActivity {
     private void closeCamera() {
         findViewById(R.id.toolbar).setVisibility(View.VISIBLE);
         findViewById(R.id.main_layout).setVisibility(View.VISIBLE);
-        findViewById(R.id.map_marker_fragment).setVisibility(View.VISIBLE);
+        findViewById(R.id.map_symbol_fragment).setVisibility(View.VISIBLE);
 
         findViewById(R.id.camera_layout).setVisibility(View.INVISIBLE);
 

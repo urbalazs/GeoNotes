@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PointF;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.PowerManager;
@@ -73,7 +72,7 @@ public class MapNeo {
 //    private MyLocationNewOverlay locationOverlay;
 //    private GpsMyLocationProvider gpsLocationProvider;
 
-    private final MarkerFragmentNeo markerFragment;
+    private final SymbolFragment symbolFragment;
 //    private Marker.OnMarkerClickListener markerClickListener;
 
     private final int snapToGpsPixelTolerance = 50;
@@ -96,8 +95,8 @@ public class MapNeo {
         this.preferences = preferences;
         this.noteIconProvider = noteIconProvider;
 
-        markerFragment = Injector.get(MarkerFragmentNeo.class);
-        addMarkerFragmentEventHandler(markerFragment);
+        symbolFragment = Injector.get(SymbolFragment.class);
+        addSymbolFragmentEventHandler(symbolFragment);
 
         // Keep device on
         final PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -286,7 +285,7 @@ public class MapNeo {
     }
 
     public void reloadAllNotes() {
-        markerFragment.reset();
+        symbolFragment.reset();
         symbolManager.deleteAll();
 
         List<Note> allNotes = this.database.getAllNotes();
@@ -367,8 +366,8 @@ public class MapNeo {
         this.noteMovedCallback = noteMovedCallback;
     }
 
-    private void addMarkerFragmentEventHandler(MarkerFragmentNeo fragment) {
-        fragment.addEventHandler(new MarkerFragmentNeo.SymbolFragmentEventHandler() {
+    private void addSymbolFragmentEventHandler(SymbolFragment fragment) {
+        fragment.addEventHandler(new SymbolFragment.SymbolFragmentEventHandler() {
             @Override
             public void onDelete(Symbol symbol) {
                 // We always have an ID and can therefore delete the note
@@ -454,10 +453,10 @@ public class MapNeo {
 
         setIcon(symbolToSelect, true);
 
-        this.markerFragment.selectSymbol(symbolToSelect, transferEditTextContent);
+        this.symbolFragment.selectSymbol(symbolToSelect, transferEditTextContent);
         zoomToSelectedMarker();
 
-        addImagesToMarkerFragment();
+        addImagesToSymbolFragment();
     }
 
     private void deselectMarker(Symbol symbol) {
@@ -470,14 +469,14 @@ public class MapNeo {
     }
 
     public Symbol getSelectedSymbol() {
-        return markerFragment.getSelectedSymbol();
+        return symbolFragment.getSelectedSymbol();
     }
 
     /**
      * Loads images of current symbol (which contains the note-ID) from database and show them.
      */
-    public List<String> addImagesToMarkerFragment() {
-        markerFragment.resetImageList();
+    public List<String> addImagesToSymbolFragment() {
+        symbolFragment.resetImageList();
         Symbol symbol = getSelectedSymbol();
 
         // It could happen that the user rotates the device (e.g. while taking a photo) and this
@@ -490,7 +489,7 @@ public class MapNeo {
         for (String photoFileName : photoFileNames) {
             File storageDir = context.getExternalFilesDir("GeoNotes");
             File image = new File(storageDir, photoFileName);
-            markerFragment.addPhoto(image);
+            symbolFragment.addPhoto(image);
         }
 
         setIcon(symbol, true);
@@ -537,9 +536,9 @@ public class MapNeo {
     private void createMarker(LatLng location) {
         // No marker to move here -> deselect or create marker
         // (selecting marker on the map is handles via the separate markerClickListener)
-        if (markerFragment.getSelectedSymbol() != null) {
+        if (symbolFragment.getSelectedSymbol() != null) {
             // Deselect selected marker:
-            setIcon(markerFragment.getSelectedSymbol(), false);
+            setIcon(symbolFragment.getSelectedSymbol(), false);
         }
 
         // Create new marker at this location and select it
@@ -575,7 +574,7 @@ public class MapNeo {
     }
 
     public void onDestroy() {
-        markerFragment.reset();
+        symbolFragment.reset();
         if (wakeLock.isHeld()) {
             wakeLock.release();
         }
@@ -609,7 +608,7 @@ public class MapNeo {
         return mlMap.getLocationComponent().getCameraMode() == CameraMode.TRACKING_GPS_NORTH;
     }
 
-    public void addRequestPhotoHandler(MarkerFragmentNeo.RequestPhotoEventHandler requestPhotoEventHandler) {
-        this.markerFragment.addRequestPhotoHandler(requestPhotoEventHandler);
+    public void addRequestPhotoHandler(SymbolFragment.RequestPhotoEventHandler requestPhotoEventHandler) {
+        this.symbolFragment.addRequestPhotoHandler(requestPhotoEventHandler);
     }
 }

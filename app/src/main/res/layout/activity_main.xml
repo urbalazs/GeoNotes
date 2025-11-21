@@ -88,7 +88,7 @@
         android:id="@+id/main_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/map_marker_fragment"
+        android:layout_above="@+id/map_symbol_fragment"
         android:layout_below="@+id/toolbar"
         android:orientation="vertical">
 
@@ -107,7 +107,7 @@
     </RelativeLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/map_marker_fragment"
+        android:id="@+id/map_symbol_fragment"
         android:name="de.hauke_stieler.geonotes.map.MarkerFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

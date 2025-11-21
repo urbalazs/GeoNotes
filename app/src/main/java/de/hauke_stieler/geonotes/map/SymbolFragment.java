@@ -41,9 +41,8 @@ import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.photo.ThumbnailUtil;
 
-// TODO rename to SymbolFragment?
-public class MarkerFragmentNeo extends Fragment {
-    private static final String LOGTAG = MarkerFragmentNeo.class.getName();
+public class SymbolFragment extends Fragment {
+    private static final String LOGTAG = SymbolFragment.class.getName();
 
     public interface SymbolFragmentEventHandler {
         void onDelete(Symbol symbol);
@@ -92,8 +91,8 @@ public class MarkerFragmentNeo extends Fragment {
     private Database database;
     private SharedPreferences preferences;
 
-    public MarkerFragmentNeo() {
-        super(R.layout.marker_fragment);
+    public SymbolFragment() {
+        super(R.layout.symbol_fragment);
     }
 
     public void addEventHandler(SymbolFragmentEventHandler symbolEventHandler) {

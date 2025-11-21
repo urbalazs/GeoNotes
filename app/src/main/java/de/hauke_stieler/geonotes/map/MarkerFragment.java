@@ -91,7 +91,7 @@ public class MarkerFragment extends Fragment {
     private SharedPreferences preferences;
 
     public MarkerFragment() {
-        super(R.layout.marker_fragment);
+        super(R.layout.symbol_fragment);
     }
 
     public void addEventHandler(MarkerFragmentEventHandler markerEventHandler) {
