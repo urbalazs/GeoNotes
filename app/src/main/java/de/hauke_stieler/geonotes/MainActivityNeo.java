@@ -52,7 +52,6 @@ import de.hauke_stieler.geonotes.categories.Category;
 import de.hauke_stieler.geonotes.categories.CategoryConfigurationActivity;
 import de.hauke_stieler.geonotes.common.ExifHelper;
 import de.hauke_stieler.geonotes.common.FileHelper;
-import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.export.BackupImportDialog;
 import de.hauke_stieler.geonotes.export.Exporter;
@@ -102,7 +101,7 @@ public class MainActivityNeo extends AppCompatActivity {
         noteIconProvider = Injector.get(NoteIconProvider.class);
 
         // TODO remove test code:
-        if(this.database.getAllNotes().isEmpty()){
+        if (this.database.getAllNotes().isEmpty()) {
             Category category = this.database.getAllCategories().get(0);
             this.database.addNote("Test note", 53.5508188, 9.9938604, category.getId());
         }
@@ -302,11 +301,13 @@ public class MainActivityNeo extends AppCompatActivity {
     private void requestPermissionsIfNecessary(String[] permissions) {
         ArrayList<String> permissionsToRequest = new ArrayList<>();
         for (String permission : permissions) {
-            if (!hasPermission(permission)) { // Permission is not granted
+            if (hasPermission(permission)) {
+                handleGrantedPermission(permission, true);
+            } else { // Permission is not granted yet
                 permissionsToRequest.add(permission);
             }
         }
-        if (permissionsToRequest.size() > 0) {
+        if (!permissionsToRequest.isEmpty()) {
             ActivityCompat.requestPermissions(
                     this,
                     permissionsToRequest.toArray(new String[0]),
@@ -321,13 +322,20 @@ public class MainActivityNeo extends AppCompatActivity {
         for (int i = 0; i < permissions.length; i++) {
             String permission = permissions[i];
             boolean granted = grantResults[i] == PackageManager.PERMISSION_GRANTED;
+            handleGrantedPermission(permission, granted);
+        }
+    }
 
-            switch (permission) {
-                case Manifest.permission.ACCESS_FINE_LOCATION:
-                    if (!granted) {
-                        toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow).setVisible(false);
+    private void handleGrantedPermission(String permission, boolean granted) {
+        switch (permission) {
+            case Manifest.permission.ACCESS_FINE_LOCATION:
+                if (granted) {
+                    if (map != null) { // The map might not be loaded yet
+                        map.enableLocationsOverlay();
                     }
-            }
+                } else {
+                    toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow).setVisible(false);
+                }
         }
     }
 

@@ -1,8 +1,10 @@
 package de.hauke_stieler.geonotes.map;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
@@ -11,6 +13,7 @@ import android.os.PowerManager;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.BlendModeColorFilterCompat;
 import androidx.core.graphics.BlendModeCompat;
@@ -61,6 +64,7 @@ public class MapNeo {
     private SymbolManager symbolManager;
 
     private final MapView mapView;
+    private MapLibreMap mlMap;
 //    private final IMapController mapController;
 //    private MyLocationNewOverlay locationOverlay;
 //    private GpsMyLocationProvider gpsLocationProvider;
@@ -80,8 +84,6 @@ public class MapNeo {
     private TouchDownListener touchDownListener;
     private NoteMovedListener noteMovedCallback;
 
-    @SuppressLint("MissingPermission")
-    // TODO needed for locationComponent. Handle permission there properly, i.e. activate locationComponent only when permissions are there
     public MapNeo(Context context,
                   MapView mapView,
                   Database database,
@@ -118,6 +120,9 @@ public class MapNeo {
         mapView.getMapAsync(mlMap -> {
             // TODO use this file from local resources. Try e.g. via mlMap.setStyle(Uri.parse("R.drawable.image")); or similar
             mlMap.setStyle("https://roblabs.com/xyz-raster-sources/styles/openstreetmap.json", style -> {
+                // Don't assign this earlier, because some other methods require a loaded style.
+                this.mlMap = mlMap;
+
                 this.symbolManager = new SymbolManager(mapView, mlMap, style);
                 this.symbolManager.setIconAllowOverlap(true);
 
@@ -146,25 +151,7 @@ public class MapNeo {
                         .getIconNameToDrawableMap()
                         .forEach((name, drawable) -> style.addImage(name, BitmapUtils.getBitmapFromDrawable(drawable)));
 
-                LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(context)
-                        .pulseEnabled(true)
-                        .backgroundTintColor(Color.parseColor("#ffffff"))
-                        .foregroundTintColor(Color.parseColor("#66bb6a"))
-                        .bearingTintColor(Color.parseColor("#66bb6a"))
-                        .build();
-                LocationEngineRequest locationEngineRequest = (new LocationEngineRequest.Builder(1000))
-                        .setFastestInterval(1000)
-                        .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
-                        .build();
-                LocationComponentActivationOptions locationComponentActivationOptions = LocationComponentActivationOptions.builder(context, style)
-                        .locationComponentOptions(locationComponentOptions)
-                        .useDefaultLocationEngine(true)
-                        .locationEngineRequest(locationEngineRequest)
-                        .build();
-                LocationComponent locationComponent = mlMap.getLocationComponent();
-                locationComponent.activateLocationComponent(locationComponentActivationOptions);
-                locationComponent.setLocationComponentEnabled(true);
-                locationComponent.setCameraMode(CameraMode.TRACKING_GPS_NORTH);
+                enableLocationsOverlay();
 
                 reloadAllNotes();
             });
@@ -255,12 +242,42 @@ public class MapNeo {
         // TODO Add current location layer (?)
     }
 
+    /**
+     * Activates the location component when the user gave the location permissions.
+     */
     public void enableLocationsOverlay() {
-        // TODO
-//        locationOverlay.enableMyLocation();
+        if (mlMap != null && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            LocationComponent locationComponent = mlMap.getLocationComponent();
+
+            if (!locationComponent.isLocationComponentActivated()) {
+                LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(context)
+                        .pulseEnabled(true)
+                        .backgroundTintColor(Color.parseColor("#ffffff"))
+                        .foregroundTintColor(Color.parseColor("#66bb6a"))
+                        .bearingTintColor(Color.parseColor("#66bb6a"))
+                        .build();
+                LocationEngineRequest locationEngineRequest = (new LocationEngineRequest.Builder(1000))
+                        .setFastestInterval(1000)
+                        .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+                        .build();
+                LocationComponentActivationOptions locationComponentActivationOptions = LocationComponentActivationOptions.builder(context, mlMap.getStyle())
+                        .locationComponentOptions(locationComponentOptions)
+                        .useDefaultLocationEngine(true)
+                        .locationEngineRequest(locationEngineRequest)
+                        .build();
+
+                locationComponent.activateLocationComponent(locationComponentActivationOptions);
+                locationComponent.setCameraMode(CameraMode.NONE);
+                locationComponent.setLocationComponentEnabled(true);
+            }
+        }
     }
 
     private void saveMapProperties(MapLibreMap mlMap) {
+        if (mlMap == null) {
+            return;
+        }
+
         SharedPreferences.Editor editor = preferences.edit();
 
         CameraPosition mapPos = mlMap.getCameraPosition();
@@ -279,14 +296,16 @@ public class MapNeo {
     }
 
     public void updateMapRotation(boolean rotatingMapEnabled, float angle) {
-        mapView.getMapAsync(mlMap -> {
-            CameraPosition oldCameraPosition = mlMap.getCameraPosition();
-            CameraPosition newCameraPosition = new CameraPosition.Builder(oldCameraPosition)
-                    .bearing(angle)
-                    .build();
-            mlMap.setCameraPosition(newCameraPosition);
-            mlMap.getUiSettings().setRotateGesturesEnabled(rotatingMapEnabled);
-        });
+        if (mlMap == null) {
+            return;
+        }
+
+        CameraPosition oldCameraPosition = mlMap.getCameraPosition();
+        CameraPosition newCameraPosition = new CameraPosition.Builder(oldCameraPosition)
+                .bearing(angle)
+                .build();
+        mlMap.setCameraPosition(newCameraPosition);
+        mlMap.getUiSettings().setRotateGesturesEnabled(rotatingMapEnabled);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -505,20 +524,24 @@ public class MapNeo {
     }
 
     private void zoomToLocation(LatLng p) {
-        mapView.getMapAsync(mlMap -> {
-            zoomToLocation(p, mlMap.getCameraPosition().zoom);
-        });
+        if (mlMap == null) {
+            return;
+        }
+
+        zoomToLocation(p, mlMap.getCameraPosition().zoom);
     }
 
     private void zoomToLocation(LatLng p, double zoom) {
-        mapView.getMapAsync(mlMap -> {
-            CameraPosition oldCameraPosition = mlMap.getCameraPosition();
-            CameraPosition newCameraPosition = new CameraPosition.Builder(oldCameraPosition)
-                    .zoom(zoom)
-                    .target(p)
-                    .build();
-            mlMap.setCameraPosition(newCameraPosition);
-        });
+        if (mlMap == null) {
+            return;
+        }
+
+        CameraPosition oldCameraPosition = mlMap.getCameraPosition();
+        CameraPosition newCameraPosition = new CameraPosition.Builder(oldCameraPosition)
+                .zoom(zoom)
+                .target(p)
+                .build();
+        mlMap.setCameraPosition(newCameraPosition);
     }
 
     private void createMarker(LatLng location) {
