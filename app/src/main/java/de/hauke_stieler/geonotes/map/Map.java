@@ -153,10 +153,6 @@ public class Map {
                     return true;
                 });
 
-                this.noteIconProvider
-                        .getIconNameToDrawableMap()
-                        .forEach((name, drawable) -> style.addImage(name, BitmapUtils.getBitmapFromDrawable(drawable)));
-
                 enableLocationsComponent();
 
                 loadPreferences();
@@ -262,6 +258,10 @@ public class Map {
     public void reloadAllNotes() {
         symbolFragment.reset();
         symbolManager.deleteAll();
+
+        this.noteIconProvider
+                .getIconNameToDrawableMap()
+                .forEach((name, drawable) -> mlMap.getStyle().addImage(name, BitmapUtils.getBitmapFromDrawable(drawable)));
 
         List<Note> allNotes = this.database.getAllNotes();
         for (Note n : allNotes) {

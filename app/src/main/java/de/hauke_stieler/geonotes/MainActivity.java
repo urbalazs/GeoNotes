@@ -404,6 +404,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case REQUEST_CATEGORIES_REQUEST_CODE:
                     noteIconProvider.updateIcons();
+                    map.reloadAllNotes();
                     break;
                 case REQUEST_EXPORT_GEOJSON_RESULT_CODE:
                     targetFile = data.getData();
