@@ -9,7 +9,6 @@
     <!-- Misc strings -->
     <string name="ok">OK</string>
     <string name="reset">Reset</string>
-    <string name="osm_contribution">© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> collaboratori</string>
 
     <!-- Dialog buttons -->
     <string name="dialog_yes">Sì</string>
