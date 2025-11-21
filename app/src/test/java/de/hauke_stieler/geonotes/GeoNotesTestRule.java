@@ -2,7 +2,6 @@ package de.hauke_stieler.geonotes;
 
 import android.content.SharedPreferences;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -10,7 +9,6 @@ import org.mockito.Mockito;
 
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.export.Exporter;
-import de.hauke_stieler.geonotes.map.Map;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 
 public class GeoNotesTestRule extends Injector implements TestRule {

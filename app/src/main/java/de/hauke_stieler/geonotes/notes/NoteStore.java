@@ -7,8 +7,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import org.osmdroid.util.GeoPoint;
-
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -91,15 +89,6 @@ public class NoteStore {
         db.update(NOTES_TABLE_NAME, values, NOTES_COL_ID + " = ?", new String[]{"" + id});
     }
 
-    public void updateLocation(SQLiteDatabase db, long id, GeoPoint location) {
-        ContentValues values = new ContentValues();
-        values.put(NOTES_COL_ID, id);
-        values.put(NOTES_COL_LAT, location.getLatitude());
-        values.put(NOTES_COL_LON, location.getLongitude());
-
-        db.update(NOTES_TABLE_NAME, values, NOTES_COL_ID + " = ?", new String[]{"" + id});
-    }
-
     public void updateLocation(SQLiteDatabase db, long id, double lat, double lng) {
         ContentValues values = new ContentValues();
         values.put(NOTES_COL_ID, id);
@@ -178,15 +167,6 @@ public class NoteStore {
             joinedFilterString.append(filter.get(filter.size() - 1));
         }
         return joinedFilterString.toString();
-    }
-
-    /**
-     * @Deprecated
-     */
-    public Note getNote(SQLiteDatabase db, String noteId) {
-        Cursor cursor = db.query(NOTES_TABLE_NAME, new String[]{NOTES_COL_ID, NOTES_COL_DESCRIPTION, NOTES_COL_LAT, NOTES_COL_LON, NOTES_COL_CREATED_AT, NOTES_COL_CATEGORY}, NOTES_COL_ID + "=?", new String[]{noteId}, null, null, null);
-        cursor.moveToFirst();
-        return getNoteFromCursor(db, cursor);
     }
 
     public Note getNote(SQLiteDatabase db, long noteId) {

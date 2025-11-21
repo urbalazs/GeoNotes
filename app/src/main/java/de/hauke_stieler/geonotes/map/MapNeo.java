@@ -460,7 +460,7 @@ public class MapNeo {
             return Collections.emptyList();
         }
 
-        List<String> photoFileNames = database.getPhotos(GeoNotesSymbol.getNoteId(symbol).toString());
+        List<String> photoFileNames = database.getPhotos(GeoNotesSymbol.getNoteId(symbol));
         for (String photoFileName : photoFileNames) {
             File storageDir = context.getExternalFilesDir("GeoNotes");
             File image = new File(storageDir, photoFileName);

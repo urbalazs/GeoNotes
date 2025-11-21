@@ -433,7 +433,7 @@ public class MainActivityNeo extends AppCompatActivity {
             takePhoto(noteId, longitude, latitude);
         });
 
-        int numerOfPhotos = database.getPhotos(noteId + "").size();
+        int numerOfPhotos = database.getPhotos(noteId).size();
         ((TextView) findViewById(R.id.image_capture_image_count_label)).setText(numerOfPhotos + "");
 
         cameraController = new LifecycleCameraController(getBaseContext());

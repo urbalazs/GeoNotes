@@ -23,8 +23,6 @@ import java.util.List;
 import de.hauke_stieler.geonotes.categories.Category;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.export.Exporter;
-import de.hauke_stieler.geonotes.map.Map;
-import de.hauke_stieler.geonotes.map.MarkerFragment;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 

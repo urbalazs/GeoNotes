@@ -38,19 +38,6 @@ public class PhotoStore {
         db.insert(PHOTOS_TABLE_NAME, null, values);
     }
 
-    public List<String> getPhotos(SQLiteDatabase db, String noteId) {
-        Cursor cursor = db.query(PHOTOS_TABLE_NAME, new String[]{PHOTOS_COL_NOTE_ID, PHOTOS_COL_FILE_NAME}, PHOTOS_COL_NOTE_ID + "=?", new String[]{noteId}, null, null, null);
-
-        List<String> photos = new ArrayList<>();
-        if (cursor.moveToFirst()) {
-            do {
-                photos.add(cursor.getString(1));
-            } while (cursor.moveToNext());
-        }
-
-        return photos;
-    }
-
     public List<String> getPhotos(SQLiteDatabase db, Long noteId) {
         Cursor cursor = db.query(PHOTOS_TABLE_NAME, new String[]{PHOTOS_COL_NOTE_ID, PHOTOS_COL_FILE_NAME}, PHOTOS_COL_NOTE_ID + "=?", new String[]{noteId.toString()}, null, null, null);
 
@@ -66,9 +53,5 @@ public class PhotoStore {
 
     public void removePhotos(SQLiteDatabase db, long noteId) {
         db.delete(PHOTOS_TABLE_NAME, PHOTOS_COL_NOTE_ID + " = ?", new String[]{"" + noteId});
-    }
-
-    public void removeAllPhotos(SQLiteDatabase db) {
-        db.delete(PHOTOS_TABLE_NAME, null, null);
     }
 }

@@ -42,7 +42,7 @@ import de.hauke_stieler.geonotes.R;
 import de.hauke_stieler.geonotes.categories.Category;
 import de.hauke_stieler.geonotes.common.FileHelper;
 import de.hauke_stieler.geonotes.database.Database;
-import de.hauke_stieler.geonotes.map.Map;
+import de.hauke_stieler.geonotes.map.MapNeo;
 import de.hauke_stieler.geonotes.map.SymbolFragment;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
@@ -56,7 +56,7 @@ public class BackupImportDialog extends DialogFragment {
     private Uri selectedInputFileUri;
     private ImportType selectedInputType;
     private Database database;
-    private Map map;
+    private MapNeo map;
     private NoteIconProvider noteIconProvider;
     private SymbolFragment symbolFragment;
     private SharedPreferences sharedPreferences;
@@ -66,7 +66,7 @@ public class BackupImportDialog extends DialogFragment {
         super.onCreate(savedInstanceState);
 
         database = Injector.get(Database.class);
-        map = Injector.get(Map.class);
+        map = Injector.get(MapNeo.class);
         noteIconProvider = Injector.get(NoteIconProvider.class);
         symbolFragment = Injector.get(SymbolFragment.class);
         sharedPreferences = Injector.get(SharedPreferences.class);
