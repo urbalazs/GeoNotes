@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.mockito.Mockito;
-import org.osmdroid.events.DelayedMapListener;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
@@ -23,6 +22,8 @@ import java.util.List;
 import de.hauke_stieler.geonotes.categories.Category;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.export.Exporter;
+import de.hauke_stieler.geonotes.map.Map;
+import de.hauke_stieler.geonotes.map.SymbolFragment;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 
@@ -85,29 +86,9 @@ public class MainActivityTest {
     }
 
 //    @Test
-    public void testloadPreferences_setsLocation() {
-        // Arrange
-        Mockito.when(sharedPreferencesMock.getFloat("PREF_LAST_LOCATION_LAT", 0f)).thenReturn(1.23f);
-        Mockito.when(sharedPreferencesMock.getFloat("PREF_LAST_LOCATION_LON", 0f)).thenReturn(4.56f);
-        Mockito.when(sharedPreferencesMock.getFloat("PREF_LAST_LOCATION_ZOOM", 2)).thenReturn(7f);
-
-        // Act
-        activityRule.getScenario().onActivity(activity -> activity.loadPreferences());
-
-        // Assert
-        Mockito.verify(mapMock).setLocation(1.23f, 4.56f, 7f);
-    }
-
-//    @Test
-    public void testloadPreferences_setsMapListener() {
-        // Act & Assert
-        Mockito.verify(mapMock).addMapListener(Mockito.any(DelayedMapListener.class), Mockito.any(Map.TouchDownListener.class), Mockito.any(Map.NoteMovedListener.class));
-    }
-
-//    @Test
     public void testloadPreferences_setsPhotoListener() {
         // Act & Assert
-        Mockito.verify(mapMock).addRequestPhotoHandler(Mockito.any(MarkerFragment.RequestPhotoEventHandler.class));
+        Mockito.verify(mapMock).addRequestPhotoHandler(Mockito.any(SymbolFragment.RequestPhotoEventHandler.class));
     }
 
 //    @Test

@@ -34,9 +34,9 @@ public class Injector {
         classBuilders.put(Database.class, () -> buildDatabase());
         classBuilders.put(Exporter.class, () -> buildExporter());
         classBuilders.put(SharedPreferences.class, () -> buildSharedPreferences());
-        classBuilders.put(MapView.class, () -> buildMapViewNeo());
+        classBuilders.put(MapView.class, () -> buildMapView());
         classBuilders.put(NoteIconProvider.class, () -> buildNoteIconProvider());
-        classBuilders.put(de.hauke_stieler.geonotes.map.MapNeo.class, () -> buildMapNeo());
+        classBuilders.put(de.hauke_stieler.geonotes.map.Map.class, () -> buildMap());
     }
 
     public static void registerActivity(Activity newActivity) {
@@ -74,16 +74,16 @@ public class Injector {
         return context.getSharedPreferences(context.getString(R.string.pref_file), MODE_PRIVATE);
     }
 
-    private static MapView buildMapViewNeo() {
-        return activity.findViewById(R.id.map_neo);
+    private static MapView buildMapView() {
+        return activity.findViewById(R.id.map);
     }
 
     private static NoteIconProvider buildNoteIconProvider() {
         return new NoteIconProvider(context, get(Database.class));
     }
 
-    private static de.hauke_stieler.geonotes.map.MapNeo buildMapNeo() {
+    private static de.hauke_stieler.geonotes.map.Map buildMap() {
         MapView mapView = get(MapView.class);
-        return new de.hauke_stieler.geonotes.map.MapNeo(context, mapView, get(Database.class), get(SharedPreferences.class), get(NoteIconProvider.class));
+        return new de.hauke_stieler.geonotes.map.Map(context, mapView, get(Database.class), get(SharedPreferences.class), get(NoteIconProvider.class));
     }
 }

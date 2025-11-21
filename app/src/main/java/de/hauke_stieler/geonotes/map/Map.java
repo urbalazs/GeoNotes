@@ -43,7 +43,7 @@ import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 
-public class MapNeo {
+public class Map {
 
     public interface TouchDownListener {
         void onTouchedDown();
@@ -75,11 +75,11 @@ public class MapNeo {
     private TouchDownListener touchDownListener;
     private NoteMovedListener noteMovedCallback;
 
-    public MapNeo(Context context,
-                  MapView mapView,
-                  Database database,
-                  SharedPreferences preferences,
-                  NoteIconProvider noteIconProvider) {
+    public Map(Context context,
+               MapView mapView,
+               Database database,
+               SharedPreferences preferences,
+               NoteIconProvider noteIconProvider) {
         this.context = context;
         this.mapView = mapView;
         this.database = database;

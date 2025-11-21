@@ -34,7 +34,7 @@
 
         <!-- configChanges: Prevent destruction of activity when rotating device -->
         <activity
-            android:name=".MainActivityNeo"
+            android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true">
             <intent-filter>

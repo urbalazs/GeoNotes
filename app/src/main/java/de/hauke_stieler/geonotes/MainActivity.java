@@ -56,14 +56,14 @@ import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.export.BackupImportDialog;
 import de.hauke_stieler.geonotes.export.Exporter;
 import de.hauke_stieler.geonotes.map.GeoNotesSymbol;
-import de.hauke_stieler.geonotes.map.MapNeo;
+import de.hauke_stieler.geonotes.map.Map;
 import de.hauke_stieler.geonotes.map.SymbolFragment;
 import de.hauke_stieler.geonotes.note_list.NoteListActivity;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 import de.hauke_stieler.geonotes.photo.ThumbnailUtil;
 import de.hauke_stieler.geonotes.settings.SettingsActivity;
 
-public class MainActivityNeo extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
     static final String BUNDLE_KEY_CAMERA_IS_OPEN = "CAMERA_IS_OPEN";
     static final String BUNDLE_KEY_SELECTED_NOTE_ID = "SELECTED_NOTE_ID";
@@ -73,7 +73,7 @@ public class MainActivityNeo extends AppCompatActivity {
     static final int REQUEST_PERMISSIONS_REQUEST_CODE = 3;
     static final int REQUEST_CAMERA_PERMISSIONS_REQUEST_CODE = 2;
 
-    private MapNeo map;
+    private Map map;
     private SharedPreferences preferences;
     private Database database;
     private Exporter exporter;
@@ -92,7 +92,7 @@ public class MainActivityNeo extends AppCompatActivity {
         Injector.registerActivity(this);
 
         LayoutInflater inflater = LayoutInflater.from(this);
-        View rootView = inflater.inflate(R.layout.activity_main_neo, null);
+        View rootView = inflater.inflate(R.layout.activity_main, null);
         setContentView(rootView);
 
         database = Injector.get(Database.class);
@@ -169,7 +169,7 @@ public class MainActivityNeo extends AppCompatActivity {
     }
 
     private void createMap() {
-        map = Injector.get(MapNeo.class);
+        map = Injector.get(Map.class);
 
         addMapListener();
     }
@@ -317,7 +317,7 @@ public class MainActivityNeo extends AppCompatActivity {
     }
 
     private void addMapListener() {
-        MapNeo.TouchDownListener touchDownCallback = () -> {
+        Map.TouchDownListener touchDownCallback = () -> {
             MenuItem menuItem = toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow);
             if (menuItem != null) {
                 menuItem.setChecked(false);
@@ -325,7 +325,7 @@ public class MainActivityNeo extends AppCompatActivity {
             }
         };
 
-        MapNeo.NoteMovedListener noteMovedCallback = (noteId, longitude, latitude) -> {
+        Map.NoteMovedListener noteMovedCallback = (noteId, longitude, latitude) -> {
             File externalFilesDir = getExternalFilesDir(FileHelper.GEONOTES_EXTERNAL_DIR_NAME);
             database.getPhotos(noteId).forEach(photo -> {
                 File photoFile = new File(externalFilesDir, photo);
