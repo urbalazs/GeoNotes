@@ -234,15 +234,16 @@ public class MainActivityNeo extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.toolbar_btn_gps_follow:
-                boolean followingLocationEnabled = item.isChecked();
-                this.map.setLocationFollowMode(followingLocationEnabled);
+                boolean newFollowingLocationState = !item.isChecked();
 
-                if (followingLocationEnabled) {
-                    item.setChecked(false);
-                    item.setIcon(R.drawable.ic_location_searching);
-                } else {
+                this.map.setLocationFollowMode(newFollowingLocationState);
+
+                if (newFollowingLocationState) {
                     item.setChecked(true);
                     item.setIcon(R.drawable.ic_my_location);
+                } else {
+                    item.setChecked(false);
+                    item.setIcon(R.drawable.ic_location_searching);
                 }
                 return true;
             case R.id.toolbar_btn_export:

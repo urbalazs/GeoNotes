@@ -172,13 +172,15 @@ public class MapNeo {
             });
 
             mlMap.addOnCameraMoveStartedListener(reason -> {
-                if (touchDownListener != null) {
-                    touchDownListener.onTouchedDown();
-                }
-
                 boolean userMovedMap = reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE;
-                if (symbolToMove != null && userMovedMap) {
-                    dragStartMarkerPosition = mlMap.getProjection().toScreenLocation(symbolToMove.getLatLng());
+                if (userMovedMap) {
+                    if (touchDownListener != null) {
+                        touchDownListener.onTouchedDown();
+                    }
+
+                    if (symbolToMove != null) {
+                        dragStartMarkerPosition = mlMap.getProjection().toScreenLocation(symbolToMove.getLatLng());
+                    }
                 }
             });
             mlMap.addOnCameraMoveListener(() -> {
@@ -621,12 +623,16 @@ public class MapNeo {
      * Turns the follow mode on or off. If it's turned on, the map will follow the current location.
      */
     public void setLocationFollowMode(boolean followingLocationEnabled) {
-        // TODO
-//        if (followingLocationEnabled) {
-//            this.locationOverlay.enableFollowLocation();
-//        } else {
-//            this.locationOverlay.disableFollowLocation();
-//        }
+        if (mlMap == null) {
+            return;
+        }
+
+        LocationComponent locationComponent = mlMap.getLocationComponent();
+        if (followingLocationEnabled) {
+            locationComponent.setCameraMode(CameraMode.TRACKING_GPS_NORTH);
+        } else {
+            locationComponent.setCameraMode(CameraMode.NONE);
+        }
     }
 
     public void addRequestPhotoHandler(MarkerFragmentNeo.RequestPhotoEventHandler requestPhotoEventHandler) {
