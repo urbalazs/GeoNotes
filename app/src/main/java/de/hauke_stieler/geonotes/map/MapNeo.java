@@ -103,6 +103,7 @@ public class MapNeo {
         wakeLock = pm.newWakeLock(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, "geonotes:wakelock");
         wakeLock.acquire();
 
+        // TODO loading drawables necessary?
         Drawable locationIconBackground
                 = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_location_background, null);
         Drawable locationIconForeground
@@ -118,8 +119,7 @@ public class MapNeo {
         Drawable arrowIcon = BitmapRenderer.renderToBitmap(context, arrowIconBackground, arrowIconForeground);
 
         mapView.getMapAsync(mlMap -> {
-            // TODO use this file from local resources. Try e.g. via mlMap.setStyle(Uri.parse("R.drawable.image")); or similar
-            mlMap.setStyle("https://roblabs.com/xyz-raster-sources/styles/openstreetmap.json", style -> {
+            mlMap.setStyle("asset://osm-map-style.json", style -> {
                 // Don't assign this earlier, because some other methods require a loaded style.
                 this.mlMap = mlMap;
 
@@ -243,7 +243,6 @@ public class MapNeo {
                 saveMapProperties(mlMap);
             });
 
-            mlMap.setCameraPosition(new CameraPosition.Builder().target(new LatLng(0.0, 0.0)).zoom(1.0).build());
             mlMap.getUiSettings().setDisableRotateWhenScaling(true);
 
             ScaleBarPlugin scaleBarPlugin = new ScaleBarPlugin(mapView, mlMap);
