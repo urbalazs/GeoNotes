@@ -35,6 +35,9 @@ import org.maplibre.android.maps.MapView;
 import org.maplibre.android.plugins.annotation.Symbol;
 import org.maplibre.android.plugins.annotation.SymbolManager;
 import org.maplibre.android.plugins.annotation.SymbolOptions;
+import org.maplibre.android.plugins.scalebar.ScaleBarOptions;
+import org.maplibre.android.plugins.scalebar.ScaleBarPlugin;
+import org.maplibre.android.plugins.scalebar.ScaleBarWidget;
 import org.maplibre.android.utils.BitmapUtils;
 
 import java.io.File;
@@ -237,6 +240,16 @@ public class MapNeo {
 
             mlMap.setCameraPosition(new CameraPosition.Builder().target(new LatLng(0.0, 0.0)).zoom(1.0).build());
             mlMap.getUiSettings().setDisableRotateWhenScaling(true);
+
+            ScaleBarPlugin scaleBarPlugin = new ScaleBarPlugin(mapView, mlMap);
+            ScaleBarOptions scaleBarOptions = new ScaleBarOptions(context)
+                    .setTextSize(32f)
+                    .setBarHeight(5f)
+                    .setBorderWidth(2f)
+                    .setTextBarMargin(15f)
+                    .setShowTextBorder(true)
+                    .setTextBorderWidth(8f);
+            scaleBarPlugin.create(scaleBarOptions);
         });
 
         createOverlays((BitmapDrawable) locationIcon, (BitmapDrawable) arrowIcon);
