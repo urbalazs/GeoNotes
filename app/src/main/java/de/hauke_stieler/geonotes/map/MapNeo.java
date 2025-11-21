@@ -7,16 +7,12 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PointF;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.PowerManager;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.core.graphics.BlendModeColorFilterCompat;
-import androidx.core.graphics.BlendModeCompat;
 
 import com.google.gson.JsonObject;
 
@@ -43,7 +39,6 @@ import java.util.List;
 
 import de.hauke_stieler.geonotes.Injector;
 import de.hauke_stieler.geonotes.R;
-import de.hauke_stieler.geonotes.common.BitmapRenderer;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
@@ -68,12 +63,8 @@ public class MapNeo {
     private final MapView mapView;
     private MapLibreMap mlMap;
     private boolean mapFullyInitialized = false; // True when all listeners, preferences, notes, etc. are loaded and registered.
-//    private final IMapController mapController;
-//    private MyLocationNewOverlay locationOverlay;
-//    private GpsMyLocationProvider gpsLocationProvider;
 
     private final SymbolFragment symbolFragment;
-//    private Marker.OnMarkerClickListener markerClickListener;
 
     private final int snapToGpsPixelTolerance = 50;
 
@@ -102,21 +93,6 @@ public class MapNeo {
         final PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, "geonotes:wakelock");
         wakeLock.acquire();
-
-        // TODO loading drawables necessary?
-        Drawable locationIconBackground
-                = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_location_background, null);
-        Drawable locationIconForeground
-                = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_location_foreground, null);
-        locationIconForeground.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(Color.parseColor("#66bb6a"), BlendModeCompat.SRC_IN));
-        Drawable locationIcon = BitmapRenderer.renderToBitmap(context, locationIconBackground, locationIconForeground);
-
-        Drawable arrowIconBackground
-                = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_arrow_background, null);
-        Drawable arrowIconForeground
-                = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_arrow_foreground, null);
-        arrowIconForeground.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(Color.parseColor("#66bb6a"), BlendModeCompat.SRC_IN));
-        Drawable arrowIcon = BitmapRenderer.renderToBitmap(context, arrowIconBackground, arrowIconForeground);
 
         mapView.getMapAsync(mlMap -> {
             mlMap.setStyle("asset://osm-map-style.json", style -> {
@@ -181,7 +157,7 @@ public class MapNeo {
                         .getIconNameToDrawableMap()
                         .forEach((name, drawable) -> style.addImage(name, BitmapUtils.getBitmapFromDrawable(drawable)));
 
-                enableLocationsOverlay();
+                enableLocationsComponent();
 
                 loadPreferences();
 
@@ -297,7 +273,7 @@ public class MapNeo {
     /**
      * Activates the location component when the user gave the location permissions.
      */
-    public void enableLocationsOverlay() {
+    public void enableLocationsComponent() {
         if (mlMap != null && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationComponent locationComponent = mlMap.getLocationComponent();
 
@@ -597,14 +573,6 @@ public class MapNeo {
         } else {
             locationComponent.setCameraMode(CameraMode.NONE);
         }
-    }
-
-    private boolean isLocationFollowModeActive() {
-        if (mlMap == null) {
-            return false;
-        }
-
-        return mlMap.getLocationComponent().getCameraMode() == CameraMode.TRACKING_GPS_NORTH;
     }
 
     public void addRequestPhotoHandler(SymbolFragment.RequestPhotoEventHandler requestPhotoEventHandler) {

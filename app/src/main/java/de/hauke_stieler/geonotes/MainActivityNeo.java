@@ -131,7 +131,7 @@ public class MainActivityNeo extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
-                    map.enableLocationsOverlay();
+                    map.enableLocationsComponent();
                 }
             }
         };
@@ -304,7 +304,7 @@ public class MainActivityNeo extends AppCompatActivity {
             case Manifest.permission.ACCESS_FINE_LOCATION:
                 if (granted) {
                     if (map != null) { // The map might not be loaded yet
-                        map.enableLocationsOverlay();
+                        map.enableLocationsComponent();
                     }
                 } else {
                     toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow).setVisible(false);
