@@ -12,10 +12,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import org.osmdroid.tileprovider.modules.SqlTileWriter;
+import org.maplibre.android.offline.OfflineManager;
 
 import de.hauke_stieler.geonotes.BuildConfig;
 import de.hauke_stieler.geonotes.R;
@@ -47,32 +48,37 @@ public class SettingsActivity extends AppCompatActivity {
 
         load();
 
-        TextView versionLabel = (TextView) findViewById(R.id.settings_version_label);
+        TextView versionLabel = findViewById(R.id.settings_version_label);
         versionLabel.setText(getString(R.string.geonotes_version) + " " + BuildConfig.VERSION_NAME);
 
-        Button clearCacheButton = (Button) findViewById(R.id.settings_clear_cache);
+        Button clearCacheButton = findViewById(R.id.settings_clear_cache);
         clearCacheButton.setOnClickListener(v -> {
             findViewById(R.id.settings_clear_cache_loading_spinner).setVisibility(View.VISIBLE);
             clearCacheButton.setEnabled(false);
 
             new Thread(() -> {
-                SqlTileWriter sqlTileWriter = new SqlTileWriter();
-                boolean cacheCleared = sqlTileWriter.purgeCache();
+                SettingsActivity context = this;
+                OfflineManager.getInstance(context).clearAmbientCache(new OfflineManager.FileSourceCallback() {
+                    @Override
+                    public void onSuccess() {
+                        findViewById(R.id.settings_clear_cache_loading_spinner).setVisibility(View.GONE);
+                        clearCacheButton.setEnabled(true);
 
-                this.runOnUiThread(() -> {
-                    findViewById(R.id.settings_clear_cache_loading_spinner).setVisibility(View.GONE);
-                    clearCacheButton.setEnabled(true);
+                        Toast.makeText(context, getString(R.string.cache_cleared), Toast.LENGTH_SHORT).show();
+                    }
 
-                    if (cacheCleared) {
-                        Toast.makeText(this, getString(R.string.cache_cleared), Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, R.string.cache_cleared_error, Toast.LENGTH_SHORT).show();
+                    @Override
+                    public void onError(@NonNull String s) {
+                        findViewById(R.id.settings_clear_cache_loading_spinner).setVisibility(View.GONE);
+                        clearCacheButton.setEnabled(true);
+
+                        Toast.makeText(context, R.string.cache_cleared_error, Toast.LENGTH_SHORT).show();
                     }
                 });
             }).start();
         });
 
-        Button feedbackButton = (Button) findViewById(R.id.settings_feedback_button);
+        Button feedbackButton = findViewById(R.id.settings_feedback_button);
         feedbackButton.setOnClickListener(v -> {
             String mailDomain = getString(R.string.feedback_mail_domain);
             String mailLocalPart = getString(R.string.feedback_mail_local_part);
