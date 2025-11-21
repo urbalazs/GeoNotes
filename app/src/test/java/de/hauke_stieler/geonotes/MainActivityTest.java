@@ -67,7 +67,7 @@ public class MainActivityTest {
 //        activityRule.getScenario().onActivity(activity -> activity.exportPopupMenu.getMenu().performIdentifierAction(0, 0));
 
         // Assert
-        Mockito.verify(exporterMock).shareAsGeoJson();
+        Mockito.verify(exporterMock).shareAsGeoJson(Mockito.any());
     }
 
     //    @Test
@@ -82,7 +82,7 @@ public class MainActivityTest {
 //        activityRule.getScenario().onActivity(activity -> activity.exportPopupMenu.getMenu().performIdentifierAction(1, 0));
 
         // Assert
-        Mockito.verify(exporterMock).shareAsGpx();
+        Mockito.verify(exporterMock).shareAsGpx(Mockito.any());
     }
 
 //    @Test

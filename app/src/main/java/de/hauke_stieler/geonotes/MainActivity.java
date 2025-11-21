@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,7 +42,9 @@ import org.maplibre.android.MapLibre;
 import org.maplibre.android.plugins.annotation.Symbol;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
     static final int REQUEST_NOTE_LIST_REQUEST_CODE = 4;
     static final int REQUEST_PERMISSIONS_REQUEST_CODE = 3;
     static final int REQUEST_CAMERA_PERMISSIONS_REQUEST_CODE = 2;
+    static final int REQUEST_EXPORT_GEOJSON_RESULT_CODE = 6;
+    static final int REQUEST_EXPORT_GPX_RESULT_CODE = 7;
+    static final int REQUEST_EXPORT_BACKUP_RESULT_CODE = 8;
 
     private Map map;
     private SharedPreferences preferences;
@@ -175,22 +181,31 @@ public class MainActivity extends AppCompatActivity {
         exportPopupMenu.getMenu().add(0, 2, 2, "Backup (ZIP)");
 
         exportPopupMenu.setOnMenuItemClickListener(menuItem -> {
+            int requestCode = -1;
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+
             switch (menuItem.getItemId()) {
                 case 0:
-                    exporter.shareAsGeoJson();
+                    intent.putExtra(Intent.EXTRA_TITLE, Exporter.getGeojsonFilename());
+                    intent.setType(Exporter.GEOJSON_MIME_TYPE);
+                    requestCode = REQUEST_EXPORT_GEOJSON_RESULT_CODE;
                     break;
                 case 1:
-                    exporter.shareAsGpx();
+                    intent.putExtra(Intent.EXTRA_TITLE, Exporter.getGpxFilename());
+                    intent.setType(Exporter.GPX_MIME_TYPE);
+                    requestCode = REQUEST_EXPORT_GPX_RESULT_CODE;
                     break;
                 case 2:
-                    try {
-                        exporter.shareAsBackup(preferences);
-                    } catch (IOException e) {
-                        Log.e("export", "Cannot export backup", e);
-                        Toast.makeText(getApplicationContext(), "Error creating backup file", Toast.LENGTH_SHORT).show();
-                    }
+                    intent.putExtra(Intent.EXTRA_TITLE, Exporter.getBackupFilename());
+                    intent.setType(Exporter.BACKUP_MIME_TYPE);
+                    requestCode = REQUEST_EXPORT_BACKUP_RESULT_CODE;
                     break;
             }
+
+            startActivityForResult(intent, requestCode);
+
             return true;
         });
         exportPopupMenu.show();
@@ -378,6 +393,7 @@ public class MainActivity extends AppCompatActivity {
 
         // If Intent was successful
         if (resultCode == RESULT_OK) {
+            Uri targetFile;
             switch (requestCode) {
                 case REQUEST_NOTE_LIST_REQUEST_CODE:
                     long selectedNoteId = data.getLongExtra(NoteListActivity.EXTRA_CLICKED_NOTE, -1L);
@@ -388,6 +404,23 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case REQUEST_CATEGORIES_REQUEST_CODE:
                     noteIconProvider.updateIcons();
+                    break;
+                case REQUEST_EXPORT_GEOJSON_RESULT_CODE:
+                    targetFile = data.getData();
+                    exporter.shareAsGeoJson(targetFile);
+                    break;
+                case REQUEST_EXPORT_GPX_RESULT_CODE:
+                    targetFile = data.getData();
+                    exporter.shareAsGpx(targetFile);
+                    break;
+                case REQUEST_EXPORT_BACKUP_RESULT_CODE:
+                    targetFile = data.getData();
+                    try {
+                        exporter.shareAsBackup(targetFile, preferences);
+                    } catch (IOException e) {
+                        Log.e(MainActivity.class.getName(), "save backup: ", e);
+                        throw new RuntimeException(e);
+                    }
                     break;
             }
         }
