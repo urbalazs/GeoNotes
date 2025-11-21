@@ -235,13 +235,15 @@ public class MainActivityNeo extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.toolbar_btn_gps_follow:
-                boolean followingLocationEnabled = !map.isFollowLocationEnabled();
+                boolean followingLocationEnabled = item.isChecked();
                 this.map.setLocationFollowMode(followingLocationEnabled);
 
                 if (followingLocationEnabled) {
-                    item.setIcon(R.drawable.ic_my_location);
-                } else {
+                    item.setChecked(false);
                     item.setIcon(R.drawable.ic_location_searching);
+                } else {
+                    item.setChecked(true);
+                    item.setIcon(R.drawable.ic_my_location);
                 }
                 return true;
             case R.id.toolbar_btn_export:
@@ -337,6 +339,7 @@ public class MainActivityNeo extends AppCompatActivity {
         MapNeo.TouchDownListener touchDownCallback = () -> {
             MenuItem menuItem = toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow);
             if (menuItem != null) {
+                menuItem.setChecked(false);
                 menuItem.setIcon(R.drawable.ic_location_searching);
             }
         };

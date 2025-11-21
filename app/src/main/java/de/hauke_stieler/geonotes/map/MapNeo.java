@@ -580,12 +580,6 @@ public class MapNeo {
 //        }
     }
 
-    public boolean isFollowLocationEnabled() {
-        // TODO
-//        return this.locationOverlay.isFollowLocationEnabled();
-        return false;
-    }
-
     public void addRequestPhotoHandler(MarkerFragmentNeo.RequestPhotoEventHandler requestPhotoEventHandler) {
         this.markerFragment.addRequestPhotoHandler(requestPhotoEventHandler);
     }
