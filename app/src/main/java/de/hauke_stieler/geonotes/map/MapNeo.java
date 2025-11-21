@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -37,7 +36,6 @@ import org.maplibre.android.plugins.annotation.SymbolManager;
 import org.maplibre.android.plugins.annotation.SymbolOptions;
 import org.maplibre.android.plugins.scalebar.ScaleBarOptions;
 import org.maplibre.android.plugins.scalebar.ScaleBarPlugin;
-import org.maplibre.android.plugins.scalebar.ScaleBarWidget;
 import org.maplibre.android.utils.BitmapUtils;
 
 import java.io.File;
@@ -259,8 +257,9 @@ public class MapNeo {
         boolean showZoomButtons = preferences.getBoolean(context.getString(R.string.pref_zoom_buttons), true);
         setZoomButtonVisibility(showZoomButtons);
 
-        float mapScale = preferences.getFloat(context.getString(R.string.pref_map_scaling), 1.0f);
-        setMapScaleFactor(mapScale);
+//        Deactivated for now, because MapLibre seems not to support this.
+//        float mapScale = preferences.getFloat(context.getString(R.string.pref_map_scaling), 1.0f);
+//        setMapScaleFactor(mapScale);
 
         boolean enableRotatingMap = preferences.getBoolean(context.getString(R.string.pref_enable_rotating_map), false);
         float mapRotation = preferences.getFloat(context.getString(R.string.pref_map_rotation), 0f);
@@ -534,11 +533,6 @@ public class MapNeo {
     public void setZoomButtonVisibility(boolean visible) {
         // TODO
 //        map.getZoomController().setVisibility(visible ? CustomZoomButtonsController.Visibility.ALWAYS : CustomZoomButtonsController.Visibility.NEVER);
-    }
-
-    public void setMapScaleFactor(float factor) {
-        // TODO
-//        map.setTilesScaleFactor(factor);
     }
 
     private void zoomToSelectedMarker() {

@@ -99,8 +99,9 @@ public class SettingsActivity extends AppCompatActivity {
         boolean prefZoomButtons = preferences.getBoolean(getString(R.string.pref_zoom_buttons), true);
         ((Switch) findViewById(R.id.settings_zoom_switch)).setChecked(prefZoomButtons);
 
-        float prefMapScaling = preferences.getFloat(getString(R.string.pref_map_scaling), 1.0f);
-        ((EditText) findViewById(R.id.settings_scale_input)).setText("" + prefMapScaling);
+//        Deactivated for now, because MapLibre seems not to support this.
+//        float prefMapScaling = preferences.getFloat(getString(R.string.pref_map_scaling), 1.0f);
+//        ((EditText) findViewById(R.id.settings_scale_input)).setText("" + prefMapScaling);
 
         boolean prefSnapNoteGps = preferences.getBoolean(getString(R.string.pref_snap_note_gps), false);
         ((Switch) findViewById(R.id.settings_snap_note_gps)).setChecked(prefSnapNoteGps);
