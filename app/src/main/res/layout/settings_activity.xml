@@ -18,25 +18,26 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:minHeight="50dp">
+<!--        Deactivated for now, because MapLibre seems not to support this.-->
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:gravity="center_vertical"-->
+<!--            android:minHeight="50dp">-->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/show_zoom_buttons"
-                android:textSize="16dp" />
+<!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="@string/show_zoom_buttons"-->
+<!--                android:textSize="16dp" />-->
 
-            <Switch
-                android:id="@+id/settings_zoom_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp" />
-        </LinearLayout>
+<!--            <Switch-->
+<!--                android:id="@+id/settings_zoom_switch"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="10dp" />-->
+<!--        </LinearLayout>-->
 
 <!--        Deactivated for now, because MapLibre seems not to support this. -->
 <!--        <LinearLayout-->

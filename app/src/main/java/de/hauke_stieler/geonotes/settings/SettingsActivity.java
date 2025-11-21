@@ -96,8 +96,9 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void load() {
-        boolean prefZoomButtons = preferences.getBoolean(getString(R.string.pref_zoom_buttons), true);
-        ((Switch) findViewById(R.id.settings_zoom_switch)).setChecked(prefZoomButtons);
+//        Deactivated for now, because MapLibre seems not to support this.
+//        boolean prefZoomButtons = preferences.getBoolean(getString(R.string.pref_zoom_buttons), true);
+//        ((Switch) findViewById(R.id.settings_zoom_switch)).setChecked(prefZoomButtons);
 
 //        Deactivated for now, because MapLibre seems not to support this.
 //        float prefMapScaling = preferences.getFloat(getString(R.string.pref_map_scaling), 1.0f);

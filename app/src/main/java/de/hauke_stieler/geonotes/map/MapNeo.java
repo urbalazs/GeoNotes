@@ -254,8 +254,9 @@ public class MapNeo {
     }
 
     void loadPreferences() {
-        boolean showZoomButtons = preferences.getBoolean(context.getString(R.string.pref_zoom_buttons), true);
-        setZoomButtonVisibility(showZoomButtons);
+//        Deactivated for now, because MapLibre seems not to support this.
+//        boolean showZoomButtons = preferences.getBoolean(context.getString(R.string.pref_zoom_buttons), true);
+//        setZoomButtonVisibility(showZoomButtons);
 
 //        Deactivated for now, because MapLibre seems not to support this.
 //        float mapScale = preferences.getFloat(context.getString(R.string.pref_map_scaling), 1.0f);
@@ -528,11 +529,6 @@ public class MapNeo {
         boolean hasPhotos = database.hasPhotos(GeoNotesSymbol.getNoteId(symbol));
         symbol.setIconImage(GeoNotesSymbol.getIconName(symbol, hasPhotos, isSelected));
         this.symbolManager.update(symbol);
-    }
-
-    public void setZoomButtonVisibility(boolean visible) {
-        // TODO
-//        map.getZoomController().setVisibility(visible ? CustomZoomButtonsController.Visibility.ALWAYS : CustomZoomButtonsController.Visibility.NEVER);
     }
 
     private void zoomToSelectedMarker() {
