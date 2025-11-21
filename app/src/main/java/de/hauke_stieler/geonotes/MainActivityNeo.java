@@ -174,27 +174,6 @@ public class MainActivityNeo extends AppCompatActivity {
         addMapListener();
     }
 
-    void loadPreferences() {
-        boolean showZoomButtons = preferences.getBoolean(getString(R.string.pref_zoom_buttons), true);
-        map.setZoomButtonVisibility(showZoomButtons);
-
-        float mapScale = preferences.getFloat(getString(R.string.pref_map_scaling), 1.0f);
-        map.setMapScaleFactor(mapScale);
-
-        boolean snapNoteToGps = preferences.getBoolean(getString(R.string.pref_snap_note_gps), false);
-        map.setSnapNoteToGps(snapNoteToGps);
-
-        boolean enableRotatingMap = preferences.getBoolean(getString(R.string.pref_enable_rotating_map), false);
-        float mapRotation = preferences.getFloat(getString(R.string.pref_map_rotation), 0f);
-        map.updateMapRotation(enableRotatingMap, mapRotation);
-
-        float lat = preferences.getFloat(getString(R.string.pref_last_location_lat), 0f);
-        float lon = preferences.getFloat(getString(R.string.pref_last_location_lon), 0f);
-        float zoom = preferences.getFloat(getString(R.string.pref_last_location_zoom), 2);
-
-        map.setLocation(lat, lon, zoom);
-    }
-
     private void showExportPopupMenu() {
         PopupMenu exportPopupMenu = new PopupMenu(this, findViewById(R.id.toolbar_btn_export));
 
@@ -281,7 +260,6 @@ public class MainActivityNeo extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        loadPreferences();
         map.onResume();
         registerReceiver(gpsSwitchStateReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
     }

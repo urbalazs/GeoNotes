@@ -65,6 +65,7 @@ public class MapNeo {
 
     private final MapView mapView;
     private MapLibreMap mlMap;
+    private boolean mapFullyInitialized = false; // True when all listeners, preferences, notes, etc. are loaded and registered.
 //    private final IMapController mapController;
 //    private MyLocationNewOverlay locationOverlay;
 //    private GpsMyLocationProvider gpsLocationProvider;
@@ -153,7 +154,11 @@ public class MapNeo {
 
                 enableLocationsOverlay();
 
+                loadPreferences();
+
                 reloadAllNotes();
+
+                mapFullyInitialized = true;
             });
 
             mlMap.addOnRotateListener(new MapLibreMap.OnRotateListener() {
@@ -219,6 +224,27 @@ public class MapNeo {
         createOverlays((BitmapDrawable) locationIcon, (BitmapDrawable) arrowIcon);
     }
 
+    void loadPreferences() {
+        boolean showZoomButtons = preferences.getBoolean(context.getString(R.string.pref_zoom_buttons), true);
+        setZoomButtonVisibility(showZoomButtons);
+
+        float mapScale = preferences.getFloat(context.getString(R.string.pref_map_scaling), 1.0f);
+        setMapScaleFactor(mapScale);
+
+        boolean snapNoteToGps = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
+        setSnapNoteToGps(snapNoteToGps);
+
+        boolean enableRotatingMap = preferences.getBoolean(context.getString(R.string.pref_enable_rotating_map), false);
+        float mapRotation = preferences.getFloat(context.getString(R.string.pref_map_rotation), 0f);
+        updateMapRotation(enableRotatingMap, mapRotation);
+
+        float lat = preferences.getFloat(context.getString(R.string.pref_last_location_lat), 0f);
+        float lon = preferences.getFloat(context.getString(R.string.pref_last_location_lon), 0f);
+        float zoom = preferences.getFloat(context.getString(R.string.pref_last_location_zoom), 2);
+
+        setLocation(lat, lon, zoom);
+    }
+
     public void reloadAllNotes() {
         Symbol currentlySelectedSymbol = getSelectedSymbol();
         if (currentlySelectedSymbol != null) {
@@ -276,7 +302,7 @@ public class MapNeo {
     }
 
     private void saveMapProperties(MapLibreMap mlMap) {
-        if (mlMap == null) {
+        if (mlMap == null || !mapFullyInitialized) {
             return;
         }
 
