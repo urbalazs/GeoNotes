@@ -309,16 +309,15 @@ public class MapNeo {
         SharedPreferences.Editor editor = preferences.edit();
 
         CameraPosition mapPos = mlMap.getCameraPosition();
+        LatLng mapTarget = mapPos.target;
+        if (mapTarget == null) {
+            return;
+        }
 
-        float angle = (float) mapPos.bearing;
-        editor.putFloat(context.getString(R.string.pref_map_rotation), angle);
-
-        float zoom = (float) mapPos.zoom;
-        editor.putFloat(context.getString(R.string.pref_last_location_zoom), zoom);
-
-        double latitude = mapPos.target.getLatitude();
-        editor.putFloat(context.getString(R.string.pref_last_location_lat), (float) latitude);
-        editor.putFloat(context.getString(R.string.pref_last_location_lon), (float) mapPos.target.getLongitude());
+        editor.putFloat(context.getString(R.string.pref_map_rotation), (float) mapPos.bearing);
+        editor.putFloat(context.getString(R.string.pref_last_location_zoom), (float) mapPos.zoom);
+        editor.putFloat(context.getString(R.string.pref_last_location_lat), (float) mapTarget.getLatitude());
+        editor.putFloat(context.getString(R.string.pref_last_location_lon), (float) mapTarget.getLongitude());
 
         editor.commit();
     }
