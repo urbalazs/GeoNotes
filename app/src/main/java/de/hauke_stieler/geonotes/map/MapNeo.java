@@ -132,34 +132,48 @@ public class MapNeo {
 
                 mlMap.addOnMapLongClickListener(coordinate -> {
                     boolean useLongTap = preferences.getBoolean(context.getString(R.string.pref_tap_duration), false);
-                    if (useLongTap) {
-                        boolean snapToGpsPosition = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
-                        Location lastKnownLocation = mlMap.getLocationComponent().getLastKnownLocation();
-                        if (snapToGpsPosition && lastKnownLocation != null) {
-                            LatLng lastKnownCoordinate = new LatLng(lastKnownLocation);
-                            // Handle snapping manually here, since the LocationComponent has no tolerance option
-                            coordinate = snapToGpsLocation(coordinate, lastKnownCoordinate);
-                        }
-                        createMarker(coordinate);
+                    if (!useLongTap) {
+                        return false;
+                    }
+
+                    boolean isInNoteMovingMode = symbolToMove != null;
+                    if (isInNoteMovingMode) {
+                        endNoteMovingMode();
                         return true;
                     }
-                    return false;
+
+                    boolean snapToGpsPosition = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
+                    Location lastKnownLocation = mlMap.getLocationComponent().getLastKnownLocation();
+                    if (snapToGpsPosition && lastKnownLocation != null) {
+                        LatLng lastKnownCoordinate = new LatLng(lastKnownLocation);
+                        // Handle snapping manually here, since the LocationComponent has no tolerance option
+                        coordinate = snapToGpsLocation(coordinate, lastKnownCoordinate);
+                    }
+                    createMarker(coordinate);
+                    return true;
                 });
 
                 mlMap.addOnMapClickListener(coordinate -> {
                     boolean useNormalTap = !preferences.getBoolean(context.getString(R.string.pref_tap_duration), false);
-                    if (useNormalTap) {
-                        boolean snapToGpsPosition = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
-                        Location lastKnownLocation = mlMap.getLocationComponent().getLastKnownLocation();
-                        if (snapToGpsPosition && lastKnownLocation != null) {
-                            LatLng lastKnownCoordinate = new LatLng(lastKnownLocation);
-                            // Handle snapping manually here, since the LocationComponent has no tolerance option
-                            coordinate = snapToGpsLocation(coordinate, lastKnownCoordinate);
-                        }
-                        createMarker(coordinate);
+                    if (!useNormalTap) {
+                        return false;
+                    }
+
+                    boolean isInNoteMovingMode = symbolToMove != null;
+                    if (isInNoteMovingMode) {
+                        endNoteMovingMode();
                         return true;
                     }
-                    return false;
+
+                    boolean snapToGpsPosition = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
+                    Location lastKnownLocation = mlMap.getLocationComponent().getLastKnownLocation();
+                    if (snapToGpsPosition && lastKnownLocation != null) {
+                        LatLng lastKnownCoordinate = new LatLng(lastKnownLocation);
+                        // Handle snapping manually here, since the LocationComponent has no tolerance option
+                        coordinate = snapToGpsLocation(coordinate, lastKnownCoordinate);
+                    }
+                    createMarker(coordinate);
+                    return true;
                 });
 
                 this.symbolManager.addClickListener(clickedSymbol -> {
@@ -215,16 +229,13 @@ public class MapNeo {
             });
             mlMap.addOnCameraIdleListener(() -> {
                 if (symbolToMove != null) {
-                    selectMarker(symbolToMove, false);
-
                     // If the ID is set, the symbol exists in the DB, therefore we store that new location
                     Long id = GeoNotesSymbol.getNoteId(symbolToMove);
                     double latitude = symbolToMove.getLatLng().getLatitude();
                     double longitude = symbolToMove.getLatLng().getLongitude();
                     database.updateNoteLocation(id, latitude, longitude);
 
-                    dragStartMarkerPosition = null;
-                    symbolToMove = null;
+                    endNoteMovingMode();
 
                     if (noteMovedCallback != null) {
                         noteMovedCallback.onNoteMoved(id, longitude, latitude);
@@ -251,6 +262,12 @@ public class MapNeo {
         });
 
         createOverlays((BitmapDrawable) locationIcon, (BitmapDrawable) arrowIcon);
+    }
+
+    private void endNoteMovingMode() {
+        selectMarker(symbolToMove, false);
+        dragStartMarkerPosition = null;
+        symbolToMove = null;
     }
 
     void loadPreferences() {
@@ -384,6 +401,7 @@ public class MapNeo {
             @Override
             public void onMove(Symbol symbol) {
                 symbolToMove = symbol;
+                dragStartMarkerPosition = mlMap.getProjection().toScreenLocation(symbolToMove.getLatLng());
             }
 
             @Override
