@@ -48,7 +48,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import de.hauke_stieler.geonotes.categories.Category;
 import de.hauke_stieler.geonotes.categories.CategoryConfigurationActivity;
 import de.hauke_stieler.geonotes.common.ExifHelper;
 import de.hauke_stieler.geonotes.common.FileHelper;
@@ -99,12 +98,6 @@ public class MainActivity extends AppCompatActivity {
         preferences = Injector.get(SharedPreferences.class);
         exporter = Injector.get(Exporter.class);
         noteIconProvider = Injector.get(NoteIconProvider.class);
-
-        // TODO remove test code:
-        if (this.database.getAllNotes().isEmpty()) {
-            Category category = this.database.getAllCategories().get(0);
-            this.database.addNote("Test note", 53.5508188, 9.9938604, category.getId());
-        }
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
