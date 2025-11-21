@@ -70,13 +70,14 @@ public class MainActivity extends AppCompatActivity {
     static final String BUNDLE_KEY_CAMERA_IS_OPEN = "CAMERA_IS_OPEN";
     static final String BUNDLE_KEY_SELECTED_NOTE_ID = "SELECTED_NOTE_ID";
 
-    static final int REQUEST_CATEGORIES_REQUEST_CODE = 5;
-    static final int REQUEST_NOTE_LIST_REQUEST_CODE = 4;
-    static final int REQUEST_PERMISSIONS_REQUEST_CODE = 3;
     static final int REQUEST_CAMERA_PERMISSIONS_REQUEST_CODE = 2;
-    static final int REQUEST_EXPORT_GEOJSON_RESULT_CODE = 6;
-    static final int REQUEST_EXPORT_GPX_RESULT_CODE = 7;
-    static final int REQUEST_EXPORT_BACKUP_RESULT_CODE = 8;
+    static final int REQUEST_PERMISSIONS_REQUEST_CODE = 3;
+    static final int REQUEST_NOTE_LIST_REQUEST_CODE = 4;
+    static final int REQUEST_CATEGORIES_REQUEST_CODE = 5;
+    static final int REQUEST_SETTINGS_REQUEST_CODE = 6;
+    static final int REQUEST_EXPORT_GEOJSON_RESULT_CODE = 7;
+    static final int REQUEST_EXPORT_GPX_RESULT_CODE = 8;
+    static final int REQUEST_EXPORT_BACKUP_RESULT_CODE = 9;
 
     private Map map;
     private SharedPreferences preferences;
@@ -240,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
                 new BackupImportDialog().show(getSupportFragmentManager(), BackupImportDialog.class.getName());
                 return true;
             case R.id.toolbar_btn_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
+                startActivityForResult(new Intent(this, SettingsActivity.class), REQUEST_SETTINGS_REQUEST_CODE);
                 return true;
             case R.id.toolbar_btn_categories:
                 startActivityForResult(new Intent(this, CategoryConfigurationActivity.class), REQUEST_CATEGORIES_REQUEST_CODE);
@@ -405,6 +406,9 @@ public class MainActivity extends AppCompatActivity {
                 case REQUEST_CATEGORIES_REQUEST_CODE:
                     noteIconProvider.updateIcons();
                     map.reloadAllNotes();
+                    break;
+                case REQUEST_SETTINGS_REQUEST_CODE:
+                    map.loadPreferences();
                     break;
                 case REQUEST_EXPORT_GEOJSON_RESULT_CODE:
                     targetFile = data.getData();

@@ -1,5 +1,6 @@
 package de.hauke_stieler.geonotes.settings;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -34,6 +35,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void handleOnBackPressed() {
                 save();
+                setResult(Activity.RESULT_OK);
                 finish();
             }
         });
@@ -161,6 +163,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         save();
+        setResult(Activity.RESULT_OK);
         finish();
         return true;
     }

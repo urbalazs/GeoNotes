@@ -235,7 +235,7 @@ public class Map {
         symbolToMove = null;
     }
 
-    void loadPreferences() {
+    public void loadPreferences() {
 //        Deactivated for now, because MapLibre seems not to support this.
 //        boolean showZoomButtons = preferences.getBoolean(context.getString(R.string.pref_zoom_buttons), true);
 //        setZoomButtonVisibility(showZoomButtons);
