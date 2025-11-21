@@ -82,9 +82,6 @@ public class MapNeo {
     private Symbol symbolToMove;
     private PointF dragStartMarkerPosition;
 
-    // TODO needed in maplibre map?
-//    private SnappableRotationOverlay rotationGestureOverlay;
-
     private TouchDownListener touchDownListener;
     private NoteMovedListener noteMovedCallback;
 
@@ -260,8 +257,6 @@ public class MapNeo {
                     .setTextBorderWidth(8f);
             scaleBarPlugin.create(scaleBarOptions);
         });
-
-        createOverlays((BitmapDrawable) locationIcon, (BitmapDrawable) arrowIcon);
     }
 
     private void endNoteMovingMode() {
@@ -299,11 +294,6 @@ public class MapNeo {
             Symbol symbol = createMarker(n);
             this.symbolManager.update(symbol);
         }
-    }
-
-    private void createOverlays(BitmapDrawable locationIcon, BitmapDrawable arrowIcon) {
-        // TODO Add scalebar (?)
-        // TODO Add current location layer (?)
     }
 
     /**
@@ -419,23 +409,6 @@ public class MapNeo {
     }
 
     /**
-     * Creates a new note in the database, creates a corresponding symbol (s. createMarker()) and also selects this new symbol.
-     */
-    // TODO
-//    private void initAndSelectMarker(GeoPoint location) {
-//        long categoryId = preferences.getLong(context.getString(R.string.pref_last_category_id), 1);
-//
-//        long id = database.addNote("", location.getLatitude(), location.getLongitude(), categoryId);
-//
-//        if (snapNoteToGps) {
-//            location = snapToGpsLocation(location);
-//        }
-//
-//        Symbol newMarker = createMarker("" + id, "", location, categoryId, markerClickListener);
-//        selectMarker(newMarker, true);
-//    }
-
-    /**
      * Tries to snap the given location to gpsLocation if it's close by.
      *
      * @return When the gpsLocation is close by, gpsLocation is returned. Otherwise, location is returned.
@@ -474,24 +447,6 @@ public class MapNeo {
      *                                and shown in the edit field.
      */
     private void selectMarker(Symbol symbolToSelect, boolean transferEditTextContent) {
-        // TODO Deselect previously selected symbol
-//        Symbol currentlySelectedMarker = markerFragment.getSelectedMarker();
-//        if (currentlySelectedMarker != null) {
-//            markerFragment.reset();
-//            deselectMarker(currentlySelectedMarker);
-//        }
-
-        // TODO
-//        setIcon(symbolToSelect, true);
-
-//        for (int i = 0; i < this.symbolManager.getAnnotations().size(); i++) {
-//            Symbol otherSymbol = this.symbolManager.getAnnotations().valueAt(i);
-//            if (GeoNotesSymbol.hasSelectedStyle(otherSymbol)) {
-//                otherSymbol.setIconImage(GeoNotesSymbol.getIconName(otherSymbol));
-//                this.symbolManager.update(otherSymbol);
-//            }
-//        }
-
         Symbol currentlySelectedSymbol = getSelectedSymbol();
         if (currentlySelectedSymbol != null) {
             setIcon(currentlySelectedSymbol, false);
@@ -593,11 +548,6 @@ public class MapNeo {
         long id = database.addNote("", location.getLatitude(), location.getLongitude(), categoryId);
         Note note = database.getNote(id);
 
-        // TODO
-//        if (snapNoteToGps) {
-//            location = snapToGpsLocation(location);
-//        }
-
         Symbol newSymbol = createMarker(note);
         selectMarker(newSymbol, true);
     }
@@ -624,11 +574,6 @@ public class MapNeo {
         zoomToSelectedMarker();
     }
 
-    public void onPause() {
-        // TODO Necessary with maplibre?
-//        map.onPause();
-    }
-
     public void onDestroy() {
         markerFragment.reset();
         if (wakeLock.isHeld()) {
@@ -636,20 +581,8 @@ public class MapNeo {
         }
     }
 
-    public de.hauke_stieler.geonotes.common.GeoPoint getLocation() {
-        // TODO
-//        return map.getMapCenter();
-        return new de.hauke_stieler.geonotes.common.GeoPoint(0.0, 0.0);
-    }
-
     public void setLocation(float lat, float lon, float zoom) {
         zoomToLocation(new LatLng(lat, lon), zoom);
-    }
-
-    public float getZoom() {
-        // TODO
-//        return (float) map.getZoomLevelDouble();
-        return 0f;
     }
 
     /**

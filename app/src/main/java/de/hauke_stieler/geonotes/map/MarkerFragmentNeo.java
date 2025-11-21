@@ -188,13 +188,6 @@ public class MarkerFragmentNeo extends Fragment {
         Note note = database.getNote(GeoNotesSymbol.getNoteId(symbol));
         View view = getView();
 
-        // TODO Title
-//        TextView titleView = view.findViewById(R.id.bubble_title);
-//        String title = symbol.getTitle();
-//        if (title != null && titleView != null) {
-//            titleView.setText(title);
-//        }
-
         // Creation date
         try {
             TextView creationDateLabel = view.findViewById(R.id.creation_date_label);

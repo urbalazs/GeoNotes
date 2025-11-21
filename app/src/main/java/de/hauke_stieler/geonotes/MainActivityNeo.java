@@ -265,12 +265,6 @@ public class MainActivityNeo extends AppCompatActivity {
     }
 
     @Override
-    public void onPause() {
-        map.onPause();
-        super.onPause();
-    }
-
-    @Override
     protected void onDestroy() {
         map.onDestroy();
         unregisterReceiver(gpsSwitchStateReceiver);
