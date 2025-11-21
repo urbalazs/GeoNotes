@@ -265,8 +265,7 @@ public class Map {
 
         List<Note> allNotes = this.database.getAllNotes();
         for (Note n : allNotes) {
-            Symbol symbol = createMarker(n);
-            this.symbolManager.update(symbol);
+            createMarker(n);
         }
     }
 
