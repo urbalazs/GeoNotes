@@ -20,6 +20,11 @@ import com.google.gson.JsonObject;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.gestures.RotateGestureDetector;
+import org.maplibre.android.location.LocationComponent;
+import org.maplibre.android.location.LocationComponentActivationOptions;
+import org.maplibre.android.location.LocationComponentOptions;
+import org.maplibre.android.location.engine.LocationEngineRequest;
+import org.maplibre.android.location.modes.CameraMode;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.plugins.annotation.Symbol;
@@ -34,7 +39,6 @@ import java.util.List;
 import de.hauke_stieler.geonotes.Injector;
 import de.hauke_stieler.geonotes.R;
 import de.hauke_stieler.geonotes.common.BitmapRenderer;
-import de.hauke_stieler.geonotes.common.GeoPoint;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
@@ -76,6 +80,8 @@ public class MapNeo {
     private TouchDownListener touchDownListener;
     private NoteMovedListener noteMovedCallback;
 
+    @SuppressLint("MissingPermission")
+    // TODO needed for locationComponent. Handle permission there properly, i.e. activate locationComponent only when permissions are there
     public MapNeo(Context context,
                   MapView mapView,
                   Database database,
@@ -139,6 +145,26 @@ public class MapNeo {
                 this.noteIconProvider
                         .getIconNameToDrawableMap()
                         .forEach((name, drawable) -> style.addImage(name, BitmapUtils.getBitmapFromDrawable(drawable)));
+
+                LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(context)
+                        .pulseEnabled(true)
+                        .backgroundTintColor(Color.parseColor("#ffffff"))
+                        .foregroundTintColor(Color.parseColor("#66bb6a"))
+                        .bearingTintColor(Color.parseColor("#66bb6a"))
+                        .build();
+                LocationEngineRequest locationEngineRequest = (new LocationEngineRequest.Builder(1000))
+                        .setFastestInterval(1000)
+                        .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+                        .build();
+                LocationComponentActivationOptions locationComponentActivationOptions = LocationComponentActivationOptions.builder(context, style)
+                        .locationComponentOptions(locationComponentOptions)
+                        .useDefaultLocationEngine(true)
+                        .locationEngineRequest(locationEngineRequest)
+                        .build();
+                LocationComponent locationComponent = mlMap.getLocationComponent();
+                locationComponent.activateLocationComponent(locationComponentActivationOptions);
+                locationComponent.setLocationComponentEnabled(true);
+                locationComponent.setCameraMode(CameraMode.TRACKING_GPS_NORTH);
 
                 reloadAllNotes();
             });
@@ -473,7 +499,7 @@ public class MapNeo {
         // Before resuming (e.g. when switching back from the list of notes to the main activity),
         // the map doesn't zoom to markers. Therefore we here zoom to the currently selected symbol.
         Symbol selectedSymbol = getSelectedSymbol();
-        if(selectedSymbol != null){
+        if (selectedSymbol != null) {
             zoomToLocation(selectedSymbol.getLatLng());
         }
     }
