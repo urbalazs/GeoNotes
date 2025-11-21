@@ -120,20 +120,22 @@ public class SettingsActivity extends AppCompatActivity {
     private void save() {
         SharedPreferences.Editor editor = preferences.edit();
 
-        boolean zoomSwitchChecked = ((Switch) findViewById(R.id.settings_zoom_switch)).isChecked();
-        editor.putBoolean(getString(R.string.pref_zoom_buttons), zoomSwitchChecked);
+//        Deactivated for now, because MapLibre seems not to support this.
+//        boolean zoomSwitchChecked = ((Switch) findViewById(R.id.settings_zoom_switch)).isChecked();
+//        editor.putBoolean(getString(R.string.pref_zoom_buttons), zoomSwitchChecked);
 
-        String mapScaleString = ((EditText) findViewById(R.id.settings_scale_input)).getText().toString();
-        float mapScale = 1.0f;
-        try {
-            mapScale = Float.parseFloat(mapScaleString);
-            if (mapScale < 0.1f) {
-                mapScale = 0.1f;
-            }
-        } catch (NumberFormatException e) {
-            // Nothing to do, just don't crash because of wrong input
-        }
-        editor.putFloat(getString(R.string.pref_map_scaling), mapScale);
+//        Deactivated for now, because MapLibre seems not to support this.
+//        String mapScaleString = ((EditText) findViewById(R.id.settings_scale_input)).getText().toString();
+//        float mapScale = 1.0f;
+//        try {
+//            mapScale = Float.parseFloat(mapScaleString);
+//            if (mapScale < 0.1f) {
+//                mapScale = 0.1f;
+//            }
+//        } catch (NumberFormatException e) {
+//            // Nothing to do, just don't crash because of wrong input
+//        }
+//        editor.putFloat(getString(R.string.pref_map_scaling), mapScale);
 
         boolean gpsSnapSwitchChecked = ((Switch) findViewById(R.id.settings_snap_note_gps)).isChecked();
         editor.putBoolean(getString(R.string.pref_snap_note_gps), gpsSnapSwitchChecked);
