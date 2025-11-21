@@ -57,7 +57,7 @@ import de.hauke_stieler.geonotes.categories.CategoryConfigurationActivity;
 import de.hauke_stieler.geonotes.common.ExifHelper;
 import de.hauke_stieler.geonotes.common.FileHelper;
 import de.hauke_stieler.geonotes.database.Database;
-import de.hauke_stieler.geonotes.databinding.ActivityMainBinding;
+//import de.hauke_stieler.geonotes.databinding.ActivityMainBinding;
 import de.hauke_stieler.geonotes.export.BackupImportDialog;
 import de.hauke_stieler.geonotes.export.Exporter;
 import de.hauke_stieler.geonotes.map.GeoNotesMarker;
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     private Exporter exporter;
     private Toolbar toolbar;
     private NoteIconProvider noteIconProvider;
-    private ActivityMainBinding viewBinding;
+//    private ActivityMainBinding viewBinding;
     private LifecycleCameraController cameraController;
     private Bundle savedInstanceState;
     private BroadcastReceiver gpsSwitchStateReceiver;
@@ -94,8 +94,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Injector.registerActivity(this);
 
-        viewBinding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(viewBinding.getRoot());
+//        viewBinding = ActivityMainBinding.inflate(getLayoutInflater());
+//        setContentView(viewBinding.getRoot());
 
         database = Injector.get(Database.class);
         preferences = Injector.get(SharedPreferences.class);
@@ -471,7 +471,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             cameraController.bindToLifecycle(this);
             cameraController.setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA);
-            viewBinding.cameraPreview.setController(cameraController);
+//            viewBinding.cameraPreview.setController(cameraController);
         } catch (Exception e) {
             Log.e("startCamera", "Error while unbinding and binding camera lifecycle: ", e);
             throw new RuntimeException(e);

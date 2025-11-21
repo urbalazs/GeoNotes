@@ -443,7 +443,6 @@ public class MainActivityNeo extends AppCompatActivity {
             cameraController.setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA);
             PreviewView cameraPreview = findViewById(R.id.camera_preview);
             cameraPreview.setController(cameraController);
-            // viewBinding.cameraPreview.setController(cameraController);
         } catch (Exception e) {
             Log.e("startCamera", "Error while unbinding and binding camera lifecycle: ", e);
             throw new RuntimeException(e);
