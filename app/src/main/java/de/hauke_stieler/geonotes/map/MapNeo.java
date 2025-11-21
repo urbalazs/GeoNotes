@@ -246,23 +246,14 @@ public class MapNeo {
     }
 
     public void reloadAllNotes() {
-        Symbol currentlySelectedSymbol = getSelectedSymbol();
-        if (currentlySelectedSymbol != null) {
-            markerFragment.reset();
-            deselectMarker(currentlySelectedSymbol);
-        }
+        markerFragment.reset();
+        symbolManager.deleteAll();
 
         List<Note> allNotes = this.database.getAllNotes();
-        if (allNotes.isEmpty()) {
-            this.markerFragment.reset();
-        } else {
-            for (Note n : allNotes) {
-                Symbol symbol = createMarker(n);
-                this.symbolManager.update(symbol);
-            }
+        for (Note n : allNotes) {
+            Symbol symbol = createMarker(n);
+            this.symbolManager.update(symbol);
         }
-
-        redraw();
     }
 
     private void createOverlays(BitmapDrawable locationIcon, BitmapDrawable arrowIcon) {
@@ -365,7 +356,6 @@ public class MapNeo {
             @Override
             public void onMove(Symbol symbol) {
                 symbolToMove = symbol;
-                redraw();
             }
 
             @Override
@@ -378,16 +368,8 @@ public class MapNeo {
 
                 // Update Icon with the new color
                 setIcon(symbol, getSelectedSymbol() == symbol);
-
-                redraw();
             }
         });
-    }
-
-    // This forces a re-draw of the map. Otherwise changes will only be visible when moving the map after e.g. the selected symbol changed.
-    private void redraw() {
-        // TODO necessary?
-//        map.postInvalidate();
     }
 
     /**
@@ -435,13 +417,12 @@ public class MapNeo {
 //        return location;
 //    }
     public void selectNote(long noteId) {
-        // TODO
-//        String noteIdString = "" + noteId;
-//        for (Overlay symbol : map.getOverlays()) {
-//            if (symbol instanceof Symbol && ((Symbol) symbol).getId().equals(noteIdString)) {
-//                this.selectMarker((Symbol) symbol, false);
-//            }
-//        }
+        for (int i = 0; i < this.symbolManager.getAnnotations().size(); i++) {
+            Symbol symbol = this.symbolManager.getAnnotations().valueAt(i);
+            if (GeoNotesSymbol.getNoteId(symbol) == noteId) {
+                selectMarker(symbol, false);
+            }
+        }
     }
 
     /**
@@ -483,7 +464,6 @@ public class MapNeo {
         zoomToSelectedMarker();
 
         addImagesToMarkerFragment();
-        redraw();
     }
 
     private void deselectMarker(Symbol symbol) {
@@ -520,7 +500,6 @@ public class MapNeo {
         }
 
         setIcon(symbol, true);
-        redraw();
 
         return photoFileNames;
     }
