@@ -26,6 +26,7 @@ import org.maplibre.android.location.engine.LocationEngineRequest;
 import org.maplibre.android.location.modes.CameraMode;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
+import org.maplibre.android.maps.Style;
 import org.maplibre.android.plugins.annotation.Symbol;
 import org.maplibre.android.plugins.annotation.SymbolManager;
 import org.maplibre.android.plugins.annotation.SymbolOptions;
@@ -275,8 +276,9 @@ public class Map {
     public void enableLocationsComponent() {
         if (mlMap != null && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationComponent locationComponent = mlMap.getLocationComponent();
+            Style style = mlMap.getStyle();
 
-            if (!locationComponent.isLocationComponentActivated()) {
+            if (!locationComponent.isLocationComponentActivated() && style != null) {
                 LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(context)
                         .pulseEnabled(true)
                         .backgroundTintColor(Color.parseColor("#ffffff"))
@@ -287,9 +289,8 @@ public class Map {
                         .setFastestInterval(1000)
                         .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
                         .build();
-                LocationComponentActivationOptions locationComponentActivationOptions = LocationComponentActivationOptions.builder(context, mlMap.getStyle())
+                LocationComponentActivationOptions locationComponentActivationOptions = LocationComponentActivationOptions.builder(context, style)
                         .locationComponentOptions(locationComponentOptions)
-                        .useDefaultLocationEngine(true)
                         .locationEngineRequest(locationEngineRequest)
                         .build();
 

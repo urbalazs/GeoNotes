@@ -42,9 +42,7 @@ import org.maplibre.android.MapLibre;
 import org.maplibre.android.plugins.annotation.Symbol;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -314,6 +312,16 @@ public class MainActivity extends AppCompatActivity {
                 if (granted) {
                     if (map != null) { // The map might not be loaded yet
                         map.enableLocationsComponent();
+                    }
+
+                    // Manually register for location updates. Otherwise, the default location
+                    // provider of MapLibre will not properly update the location but instead show
+                    // either just the last location or a very coarse location. Without this, it
+                    // might also happen, that the location "jumps" quite a large distance of
+                    // multiple hundred meters.
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 1, location -> Log.d(this.getClass().getName(), "On location update: " + location));
                     }
                 } else {
                     toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow).setVisible(false);
