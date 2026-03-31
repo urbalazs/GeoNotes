@@ -257,7 +257,7 @@ public class Map {
     }
 
     public void reloadAllNotes() {
-        symbolFragment.reset();
+        symbolFragment.saveAndReset();
         symbolManager.deleteAll();
 
         this.noteIconProvider
@@ -549,7 +549,7 @@ public class Map {
     }
 
     public void onDestroy() {
-        symbolFragment.reset();
+        symbolFragment.saveAndReset();
         if (wakeLock.isHeld()) {
             wakeLock.release();
         }

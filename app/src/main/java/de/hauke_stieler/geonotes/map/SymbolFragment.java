@@ -181,6 +181,10 @@ public class SymbolFragment extends Fragment {
     }
 
     public void selectSymbol(Symbol symbol, boolean transferEditTextContent) {
+        if(selectedSymbol != null){
+            saveAndReset();
+        }
+
         selectedSymbol = symbol;
         state = State.EDITING;
 
@@ -229,16 +233,15 @@ public class SymbolFragment extends Fragment {
         deleteButton.setOnClickListener(v -> {
             symbolEventHandler.onDelete(symbol);
             symbolEventHandler.onClose(symbol);
-            reset();
+            saveAndReset();
 
             descriptionView.clearFocus();
         });
 
         Button saveButton = view.findViewById(R.id.save_button);
         saveButton.setOnClickListener(v -> {
-            symbolEventHandler.onSave(symbol);
+            saveAndReset();
             symbolEventHandler.onClose(symbol);
-            reset();
 
             descriptionView.clearFocus();
         });
@@ -252,7 +255,7 @@ public class SymbolFragment extends Fragment {
 
         ImageButton cameraButton = view.findViewById(R.id.camera_button);
         cameraButton.setOnClickListener(v -> {
-            symbolEventHandler.onSave(symbol);
+            saveSymbol(symbol);
             long noteId = GeoNotesSymbol.getNoteId(symbol);
             requestPhotoHandler.onRequestPhoto(noteId, symbol.getLatLng().getLongitude(), symbol.getLatLng().getLatitude());
         });
@@ -305,14 +308,12 @@ public class SymbolFragment extends Fragment {
     }
 
     /**
-     * Resets the fragment but not the selected symbol. The content and icon of the symbol stays
-     * unchanged even though it's not selected anymore!
+     * Resets the fragment but not the selected symbol. If there is a selected symbol, a save action
+     * will be triggered.
      */
-    public void reset() {
+    public void saveAndReset() {
         if (selectedSymbol != null) {
-            String newDescription = ((EditText) getView().findViewById(R.id.note_description)).getText().toString();
-            GeoNotesSymbol.setDescription(selectedSymbol, newDescription);
-            symbolEventHandler.onSave(selectedSymbol);
+            saveSymbol(selectedSymbol);
         }
 
         if (getView() == null) {
@@ -329,6 +330,14 @@ public class SymbolFragment extends Fragment {
 
         state = State.NEW;
         updatePanelVisibility();
+    }
+
+    private void saveSymbol(Symbol symbol) {
+        // Store input in symbol properties
+        String newDescription = ((EditText) getView().findViewById(R.id.note_description)).getText().toString();
+        GeoNotesSymbol.setDescription(selectedSymbol, newDescription);
+        // Trigger saving the symbol
+        symbolEventHandler.onSave(symbol);
     }
 
     private void updatePanelVisibility() {
