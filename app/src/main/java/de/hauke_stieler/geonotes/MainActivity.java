@@ -35,6 +35,8 @@ import androidx.camera.view.LifecycleCameraController;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -98,6 +100,9 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         View rootView = inflater.inflate(R.layout.activity_main, null);
         setContentView(rootView);
+
+        // Set color of status bar. Since SDK 35 necessary, otherwise it's plain white.
+        getWindow().getDecorView().setBackgroundColor(getResources().getColor(R.color.primary_dark));
 
         database = Injector.get(Database.class);
         preferences = Injector.get(SharedPreferences.class);
