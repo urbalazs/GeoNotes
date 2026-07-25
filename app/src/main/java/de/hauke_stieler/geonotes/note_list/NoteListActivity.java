@@ -93,30 +93,29 @@ public class NoteListActivity extends AppCompatActivity implements FilterDialog.
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.toolbar_btn_filter:
-                new FilterDialog(this, filterText, filterCategoryId).show(getSupportFragmentManager(), FilterDialog.class.getName());
-                return true;
-            case R.id.toolbar_btn_delete_all:
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                if ((filterText == null || "".equals(filterText)) && filterCategoryId == null) {
-                    builder.setMessage(getString(R.string.note_list_delete_all_notes));
-                } else {
-                    builder.setMessage(R.string.note_list_delete_all_filtered_notes);
-                }
-                builder.setPositiveButton(R.string.dialog_yes, (dialog, id) -> {
-                    database.removeAllNotes(getExternalFilesDir(FileHelper.GEONOTES_EXTERNAL_DIR_NAME), filterText, filterCategoryId);
-                    load();
-                });
-                builder.setNegativeButton(R.string.dialog_no, (dialog, id) -> {
-                });
-                AlertDialog dialog = builder.create();
-                dialog.show();
+        int itemId = item.getItemId();
+        if (itemId == R.id.toolbar_btn_filter) {
+            new FilterDialog(this, filterText, filterCategoryId).show(getSupportFragmentManager(), FilterDialog.class.getName());
+            return true;
+        } else if (itemId == R.id.toolbar_btn_delete_all) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            if ((filterText == null || "".equals(filterText)) && filterCategoryId == null) {
+                builder.setMessage(getString(R.string.note_list_delete_all_notes));
+            } else {
+                builder.setMessage(R.string.note_list_delete_all_filtered_notes);
+            }
+            builder.setPositiveButton(R.string.dialog_yes, (dialog, id) -> {
+                database.removeAllNotes(getExternalFilesDir(FileHelper.GEONOTES_EXTERNAL_DIR_NAME), filterText, filterCategoryId);
+                load();
+            });
+            builder.setNegativeButton(R.string.dialog_no, (dialog, id) -> {
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
 
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

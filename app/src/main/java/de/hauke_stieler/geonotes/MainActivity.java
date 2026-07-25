@@ -218,38 +218,37 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.toolbar_btn_gps_follow:
-                boolean newFollowingLocationState = !item.isChecked();
+        int itemId = item.getItemId();
+        if (itemId == R.id.toolbar_btn_gps_follow) {
+            boolean newFollowingLocationState = !item.isChecked();
 
-                this.map.setLocationFollowMode(newFollowingLocationState);
+            this.map.setLocationFollowMode(newFollowingLocationState);
 
-                if (newFollowingLocationState) {
-                    item.setChecked(true);
-                    item.setIcon(R.drawable.ic_my_location);
-                } else {
-                    item.setChecked(false);
-                    item.setIcon(R.drawable.ic_location_searching);
-                }
-                return true;
-            case R.id.toolbar_btn_export:
-                showExportPopupMenu();
-                return true;
-            case R.id.toolbar_btn_import:
-                new BackupImportDialog().show(getSupportFragmentManager(), BackupImportDialog.class.getName());
-                return true;
-            case R.id.toolbar_btn_settings:
-                startActivityForResult(new Intent(this, SettingsActivity.class), REQUEST_SETTINGS_REQUEST_CODE);
-                return true;
-            case R.id.toolbar_btn_categories:
-                startActivityForResult(new Intent(this, CategoryConfigurationActivity.class), REQUEST_CATEGORIES_REQUEST_CODE);
-                return true;
-            case R.id.toolbar_btn_note_list:
-                startActivityForResult(new Intent(this, NoteListActivity.class), REQUEST_NOTE_LIST_REQUEST_CODE);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            if (newFollowingLocationState) {
+                item.setChecked(true);
+                item.setIcon(R.drawable.ic_my_location);
+            } else {
+                item.setChecked(false);
+                item.setIcon(R.drawable.ic_location_searching);
+            }
+            return true;
+        } else if (itemId == R.id.toolbar_btn_export) {
+            showExportPopupMenu();
+            return true;
+        } else if (itemId == R.id.toolbar_btn_import) {
+            new BackupImportDialog().show(getSupportFragmentManager(), BackupImportDialog.class.getName());
+            return true;
+        } else if (itemId == R.id.toolbar_btn_settings) {
+            startActivityForResult(new Intent(this, SettingsActivity.class), REQUEST_SETTINGS_REQUEST_CODE);
+            return true;
+        } else if (itemId == R.id.toolbar_btn_categories) {
+            startActivityForResult(new Intent(this, CategoryConfigurationActivity.class), REQUEST_CATEGORIES_REQUEST_CODE);
+            return true;
+        } else if (itemId == R.id.toolbar_btn_note_list) {
+            startActivityForResult(new Intent(this, NoteListActivity.class), REQUEST_NOTE_LIST_REQUEST_CODE);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
