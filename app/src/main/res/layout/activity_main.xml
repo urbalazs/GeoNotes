@@ -95,8 +95,21 @@
         <org.maplibre.android.maps.MapView
             android:id="@+id/map"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
+            android:layout_height="match_parent" />
+
+        <!-- View for the note-symbol to stay calm in the center of the screen
+         when the user moves the map underneath. The height and padding are used
+         to correctly center the icon since its origin is at the _bottom_ center,
+         not at the top. -->
+        <ImageView
+            android:id="@+id/map_icon_move_view"
+            android:layout_width="50dp"
+            android:layout_height="100dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:clickable="false"
+            android:focusable="false"
+            android:paddingBottom="50dp" />
     </RelativeLayout>
 
     <RelativeLayout

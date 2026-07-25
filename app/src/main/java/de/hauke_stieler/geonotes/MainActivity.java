@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
@@ -344,12 +345,24 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        Map.NoteMovedListener noteMovedCallback = (noteId, longitude, latitude) -> {
-            File externalFilesDir = getExternalFilesDir(FileHelper.GEONOTES_EXTERNAL_DIR_NAME);
-            database.getPhotos(noteId).forEach(photo -> {
-                File photoFile = new File(externalFilesDir, photo);
-                addPositionToImageExifData(photoFile, longitude, latitude);
-            });
+        Map.NoteMovedListener noteMovedCallback = new Map.NoteMovedListener() {
+            @Override
+            public void onNoteMoveStarted(Long categoryId, boolean isPhotoNote) {
+                Drawable icon = noteIconProvider.getIcon(categoryId, true, isPhotoNote);
+                ((ImageView) findViewById(R.id.map_icon_move_view)).setImageDrawable(icon);
+            }
+
+            @Override
+            public void onNoteMoveEnded(Long noteId, Double longitude, Double latitude) {
+                File externalFilesDir = getExternalFilesDir(FileHelper.GEONOTES_EXTERNAL_DIR_NAME);
+                database.getPhotos(noteId).forEach(photo -> {
+                    File photoFile = new File(externalFilesDir, photo);
+                    addPositionToImageExifData(photoFile, longitude, latitude);
+                });
+
+                ImageView imageView = findViewById(R.id.map_icon_move_view);
+                imageView.setImageDrawable(null);
+            }
         };
 
         map.addMapListener(touchDownCallback, noteMovedCallback);

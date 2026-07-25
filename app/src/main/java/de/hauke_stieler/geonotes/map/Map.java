@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.geometry.LatLng;
+import org.maplibre.android.gestures.MoveGestureDetector;
 import org.maplibre.android.gestures.RotateGestureDetector;
 import org.maplibre.android.location.LocationComponent;
 import org.maplibre.android.location.LocationComponentActivationOptions;
@@ -51,7 +52,9 @@ public class Map {
     }
 
     public interface NoteMovedListener {
-        void onNoteMoved(Long value, Double longitude, Double latitude);
+        void onNoteMoveStarted(Long categoryId, boolean isPhotoNote);
+
+        void onNoteMoveEnded(Long noteId, Double longitude, Double latitude);
     }
 
     private final Context context;
@@ -178,42 +181,63 @@ public class Map {
                 }
             });
 
+            mlMap.addOnMoveListener(new MapLibreMap.OnMoveListener() {
+                // We use the general move listener instead of a camera listener, since the camera
+                // listener (as of writing) fires the event only if the camera actually moves. This
+                // means that the initial event is fired _after_ the map has moves. Storing the
+                // screen location of a note that should be moved at that moment in time yields an
+                // offset to the original location of that note, since the map has already moved.
+                // Therefore, we listen to the general move event, that is fired as soon as the map
+                // moves and not just afterwards. Getting the screen location of a note then yields
+                // the correct location without any offsets.
+                @Override
+                public void onMoveBegin(@NonNull MoveGestureDetector moveGestureDetector) {
+                    if (symbolToMove != null) {
+                        // First movement of the map in the "move note" mode. Save the screen
+                        // location of the nove to later determine the new location.
+                        dragStartMarkerPosition = mlMap.getProjection().toScreenLocation(symbolToMove.getLatLng());
+                    }
+                }
+
+                @Override
+                public void onMove(@NonNull MoveGestureDetector moveGestureDetector) {
+                    // Do not move the symbolToMove so that it stays where it was. It's then visible
+                    // as a "ghost" so that one can see its old location.
+                }
+
+                @Override
+                public void onMoveEnd(@NonNull MoveGestureDetector moveGestureDetector) {
+                    if (symbolToMove != null) {
+                        // Visually re-add the previously removed icon.
+                        symbolToMove.setIconOpacity(1f);
+                        symbolToMove.setLatLng(mlMap.getProjection().fromScreenLocation(dragStartMarkerPosition));
+                        symbolManager.update(symbolToMove);
+
+                        // If the ID is set, the symbol exists in the DB, therefore we store that new location
+                        Long id = GeoNotesSymbol.getNoteId(symbolToMove);
+                        double latitude = symbolToMove.getLatLng().getLatitude();
+                        double longitude = symbolToMove.getLatLng().getLongitude();
+                        database.updateNoteLocation(id, latitude, longitude);
+
+                        endNoteMovingMode();
+
+                        if (noteMovedCallback != null) {
+                            noteMovedCallback.onNoteMoveEnded(id, longitude, latitude);
+                        }
+                    }
+
+                    // Resetting the map rotation with the compass-icon also triggers this event and we
+                    // want to store the new rotation
+                    saveMapProperties(mlMap);
+                }
+            });
             mlMap.addOnCameraMoveStartedListener(reason -> {
                 boolean userMovedMap = reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE;
                 if (userMovedMap) {
                     if (touchDownListener != null) {
                         touchDownListener.onTouchedDown();
                     }
-
-                    if (symbolToMove != null) {
-                        dragStartMarkerPosition = mlMap.getProjection().toScreenLocation(symbolToMove.getLatLng());
-                    }
                 }
-            });
-            mlMap.addOnCameraMoveListener(() -> {
-                if (symbolToMove != null) {
-                    symbolToMove.setLatLng(mlMap.getProjection().fromScreenLocation(dragStartMarkerPosition));
-                    this.symbolManager.update(symbolToMove);
-                }
-            });
-            mlMap.addOnCameraIdleListener(() -> {
-                if (symbolToMove != null) {
-                    // If the ID is set, the symbol exists in the DB, therefore we store that new location
-                    Long id = GeoNotesSymbol.getNoteId(symbolToMove);
-                    double latitude = symbolToMove.getLatLng().getLatitude();
-                    double longitude = symbolToMove.getLatLng().getLongitude();
-                    database.updateNoteLocation(id, latitude, longitude);
-
-                    endNoteMovingMode();
-
-                    if (noteMovedCallback != null) {
-                        noteMovedCallback.onNoteMoved(id, longitude, latitude);
-                    }
-                }
-
-                // Resetting the map rotation with the compass-icon also triggers this event and we
-                // want to store the new rotation
-                saveMapProperties(mlMap);
             });
 
             mlMap.getUiSettings().setDisableRotateWhenScaling(true);
@@ -237,11 +261,11 @@ public class Map {
     }
 
     public void loadPreferences() {
-//        Deactivated for now, because MapLibre seems not to support this.
+//        TODO Deactivated for now, because MapLibre seems not to support this.
 //        boolean showZoomButtons = preferences.getBoolean(context.getString(R.string.pref_zoom_buttons), true);
 //        setZoomButtonVisibility(showZoomButtons);
 
-//        Deactivated for now, because MapLibre seems not to support this.
+//        TODO Deactivated for now, because MapLibre seems not to support this.
 //        float mapScale = preferences.getFloat(context.getString(R.string.pref_map_scaling), 1.0f);
 //        setMapScaleFactor(mapScale);
 
@@ -365,7 +389,18 @@ public class Map {
             @Override
             public void onMove(Symbol symbol) {
                 symbolToMove = symbol;
-                dragStartMarkerPosition = mlMap.getProjection().toScreenLocation(symbolToMove.getLatLng());
+
+                // Visually remove the icon from the map. This is because the icon will be shown on
+                // a separate UI-element. This is used to show the note always in the center of the
+                // screen while the user can move the map underneath. Other implementations (i.e.
+                // moving the coordinate of the icon) are ugly and the icon would wiggle around
+                // while moving the map.
+                // Keep the symbol on the map as a "ghost" to see its previous location.
+                symbol.setIconOpacity(0.333f);
+                symbolManager.update(symbol);
+
+                boolean hasPhotos = database.hasPhotos(GeoNotesSymbol.getNoteId(symbol));
+                noteMovedCallback.onNoteMoveStarted(GeoNotesSymbol.getCategoryId(symbol), hasPhotos);
             }
 
             @Override
