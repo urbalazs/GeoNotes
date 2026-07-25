@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +21,7 @@ import org.maplibre.android.offline.OfflineManager;
 
 import de.hauke_stieler.geonotes.BuildConfig;
 import de.hauke_stieler.geonotes.R;
+import de.hauke_stieler.geonotes.common.AppCompatExtension;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -29,7 +30,12 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.settings_activity);
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View rootView = inflater.inflate(R.layout.settings_activity, null);
+        setContentView(rootView);
+
+        AppCompatExtension.setupWindowInsetListener(rootView, findViewById(R.id.settings_toolbar));
 
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
@@ -104,6 +110,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void load() {
+        // TODO remove this?
 //        Deactivated for now, because MapLibre seems not to support this.
 //        boolean prefZoomButtons = preferences.getBoolean(getString(R.string.pref_zoom_buttons), true);
 //        ((Switch) findViewById(R.id.settings_zoom_switch)).setChecked(prefZoomButtons);
@@ -128,6 +135,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void save() {
         SharedPreferences.Editor editor = preferences.edit();
 
+        // TODO remove this?
 //        Deactivated for now, because MapLibre seems not to support this.
 //        boolean zoomSwitchChecked = ((Switch) findViewById(R.id.settings_zoom_switch)).isChecked();
 //        editor.putBoolean(getString(R.string.pref_zoom_buttons), zoomSwitchChecked);

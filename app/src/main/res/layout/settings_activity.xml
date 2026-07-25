@@ -18,7 +18,7 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-<!--        Deactivated for now, because MapLibre seems not to support this.-->
+<!--        TODO Deactivated for now, because MapLibre seems not to support this.-->
 <!--        <LinearLayout-->
 <!--            android:layout_width="match_parent"-->
 <!--            android:layout_height="wrap_content"-->
@@ -39,7 +39,7 @@
 <!--                android:layout_marginStart="10dp" />-->
 <!--        </LinearLayout>-->
 
-<!--        Deactivated for now, because MapLibre seems not to support this. -->
+<!--        TODO Deactivated for now, because MapLibre seems not to support this. -->
 <!--        <LinearLayout-->
 <!--            android:layout_width="match_parent"-->
 <!--            android:layout_height="wrap_content"-->

@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
@@ -19,6 +21,7 @@ import java.util.List;
 
 import de.hauke_stieler.geonotes.Injector;
 import de.hauke_stieler.geonotes.R;
+import de.hauke_stieler.geonotes.common.AppCompatExtension;
 import de.hauke_stieler.geonotes.common.FileHelper;
 import de.hauke_stieler.geonotes.database.Database;
 import de.hauke_stieler.geonotes.notes.Note;
@@ -37,7 +40,12 @@ public class NoteListActivity extends AppCompatActivity implements FilterDialog.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_note_list);
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View rootView = inflater.inflate(R.layout.activity_note_list, null);
+        setContentView(rootView);
+
+        AppCompatExtension.setupWindowInsetListener(rootView, findViewById(R.id.note_list_toolbar));
 
         Toolbar toolbar = findViewById(R.id.note_list_toolbar);
         setSupportActionBar(toolbar);
