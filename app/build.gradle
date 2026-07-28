@@ -42,20 +42,23 @@ android {
 }
 
 dependencies {
-    implementation 'org.maplibre.gl:android-sdk:11.12.1'
+    // No Update to MapLibre 13 (or newer) since the plugin would need an update to 4.0.0, which
+    // has "android-sdk" in a new version as dependency, which uses vulkan as default driver,
+    // which is not supported by many older devices.
+    implementation 'org.maplibre.gl:android-sdk:11.13.5'
     implementation 'org.maplibre.gl:android-plugin-annotation-v9:3.0.2'
     implementation 'org.maplibre.gl:android-plugin-scalebar-v9:3.0.2'
 
     implementation 'androidx.core:core:1.19.0'
     implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'androidx.preference:preference:1.2.1'
-    implementation 'org.apache.commons:commons-text:1.14.0'
-    implementation 'com.google.code.gson:gson:2.13.1'
-    implementation 'androidx.exifinterface:exifinterface:1.4.1'
+    implementation 'org.apache.commons:commons-text:1.15.0'
+    implementation 'com.google.code.gson:gson:2.14.0'
+    implementation 'androidx.exifinterface:exifinterface:1.4.2'
 
-    def camerax_version = "1.4.2"
+    def camerax_version = "1.6.1"
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
     implementation "androidx.camera:camera-lifecycle:${camerax_version}"
