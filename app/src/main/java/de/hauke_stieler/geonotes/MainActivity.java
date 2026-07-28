@@ -8,6 +8,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
@@ -65,7 +67,7 @@ import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 import de.hauke_stieler.geonotes.photo.ThumbnailUtil;
 import de.hauke_stieler.geonotes.settings.SettingsActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LocationListener {
 
     static final String BUNDLE_KEY_CAMERA_IS_OPEN = "CAMERA_IS_OPEN";
     static final String BUNDLE_KEY_SELECTED_NOTE_ID = "SELECTED_NOTE_ID";
@@ -324,7 +326,7 @@ public class MainActivity extends AppCompatActivity {
                     // multiple hundred meters.
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 1, location -> Log.d(this.getClass().getName(), "On location update: " + location));
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 1, this);
                     }
                 } else {
                     toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow).setVisible(false);
@@ -635,7 +637,27 @@ public class MainActivity extends AppCompatActivity {
         try {
             ThumbnailUtil.writeThumbnail(getContentResolver(), photoFile, sizeInPixel);
         } catch (IOException e) {
-            Toast.makeText(getApplicationContext(), R.string.note_list_create_thumbnail_failed, Toast.LENGTH_SHORT);
+            Toast.makeText(getApplicationContext(), R.string.note_list_create_thumbnail_failed, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        Log.d(this.getClass().getName(), "On location update: " + location);
+    }
+
+    // Empty handler needed for Android backward compatibility (at least for Android 10)
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+    }
+
+    // Empty handler needed for Android backward compatibility (at least for Android 10)
+    @Override
+    public void onProviderEnabled(@NonNull String provider) {
+    }
+
+    // Empty handler needed for Android backward compatibility (at least for Android 10)
+    @Override
+    public void onProviderDisabled(@NonNull String provider) {
     }
 }
