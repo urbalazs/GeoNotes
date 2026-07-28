@@ -9,7 +9,6 @@
     <!-- Misc strings -->
     <string name="ok">Rendben</string>
     <string name="reset">Visszaállítás</string>
-    <string name="osm_contribution">© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> közreműködők</string>
 
     <!-- Dialog buttons -->
     <string name="dialog_yes">Igen</string>

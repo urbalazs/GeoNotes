@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import org.osmdroid.views.MapView;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +12,8 @@ import de.hauke_stieler.geonotes.export.Exporter;
 import de.hauke_stieler.geonotes.notes.NoteIconProvider;
 
 import static android.content.Context.MODE_PRIVATE;
+
+import org.maplibre.android.maps.MapView;
 
 interface ClassBuilder<T> {
     T build();

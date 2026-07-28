@@ -9,7 +9,6 @@
     <!-- Misc strings -->
     <string name="ok">OK</string>
     <string name="reset">Réinitialiser</string>
-    <string name="osm_contribution">© Membres d’<a href="https://openstreetmap.org/copyright">OpenStreetMap</a></string>
 
     <!-- Dialog buttons -->
     <string name="dialog_yes">Oui</string>
