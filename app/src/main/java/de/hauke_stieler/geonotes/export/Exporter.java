@@ -73,7 +73,7 @@ public class Exporter {
         HashMap<String, Object> preferencesMap = new HashMap<>();
 
         String key = context.getString(R.string.pref_map_scaling);
-        float prefMapScaling = preferences.getFloat(key, 1.0f);
+        float prefMapScaling = preferences.getFloat(key, Float.NaN);
         preferencesMap.put(key, prefMapScaling);
 
         key = context.getString(R.string.pref_snap_note_gps);

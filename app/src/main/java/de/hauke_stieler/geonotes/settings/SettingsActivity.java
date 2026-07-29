@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -110,10 +111,12 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void load() {
-        // TODO
-//        Deactivated for now, because MapLibre seems not to support this.
-//        float prefMapScaling = preferences.getFloat(getString(R.string.pref_map_scaling), 1.0f);
-//        ((EditText) findViewById(R.id.settings_scale_input)).setText("" + prefMapScaling);
+        float prefMapScaling = preferences.getFloat(getString(R.string.pref_map_scaling), Float.NaN);
+        if (Float.isNaN(prefMapScaling)) {
+            ((EditText) findViewById(R.id.settings_scale_input)).setText("");
+        } else {
+            ((EditText) findViewById(R.id.settings_scale_input)).setText("" + prefMapScaling);
+        }
 
         boolean prefSnapNoteGps = preferences.getBoolean(getString(R.string.pref_snap_note_gps), false);
         ((Switch) findViewById(R.id.settings_snap_note_gps)).setChecked(prefSnapNoteGps);
@@ -131,18 +134,17 @@ public class SettingsActivity extends AppCompatActivity {
     private void save() {
         SharedPreferences.Editor editor = preferences.edit();
 
-        // TODO
-//        String mapScaleString = ((EditText) findViewById(R.id.settings_scale_input)).getText().toString();
-//        float mapScale = 1.0f;
-//        try {
-//            mapScale = Float.parseFloat(mapScaleString);
-//            if (mapScale < 0.1f) {
-//                mapScale = 0.1f;
-//            }
-//        } catch (NumberFormatException e) {
-//            // Nothing to do, just don't crash because of wrong input
-//        }
-//        editor.putFloat(getString(R.string.pref_map_scaling), mapScale);
+        String mapScaleString = ((EditText) findViewById(R.id.settings_scale_input)).getText().toString();
+        float mapScale = Float.NaN;
+        try {
+            mapScale = Float.parseFloat(mapScaleString);
+            if (mapScale < 0.1f) {
+                mapScale = 0.1f;
+            }
+        } catch (NumberFormatException e) {
+            // Nothing to do, just don't crash because of wrong input
+        }
+        editor.putFloat(getString(R.string.pref_map_scaling), mapScale);
 
         boolean gpsSnapSwitchChecked = ((Switch) findViewById(R.id.settings_snap_note_gps)).isChecked();
         editor.putBoolean(getString(R.string.pref_snap_note_gps), gpsSnapSwitchChecked);

@@ -1,6 +1,7 @@
 package de.hauke_stieler.geonotes;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -20,7 +21,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +45,8 @@ import androidx.core.content.ContextCompat;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.maplibre.android.MapLibre;
+import org.maplibre.android.maps.MapLibreMapOptions;
+import org.maplibre.android.maps.MapView;
 import org.maplibre.android.plugins.annotation.Symbol;
 
 import java.io.File;
@@ -82,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     static final int REQUEST_EXPORT_BACKUP_RESULT_CODE = 9;
 
     private Map map;
+    private int mapViewId;
     private SharedPreferences preferences;
     private Database database;
     private Exporter exporter;
@@ -109,6 +115,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         preferences = Injector.get(SharedPreferences.class);
         exporter = Injector.get(Exporter.class);
         noteIconProvider = Injector.get(NoteIconProvider.class);
+
+        mapViewId = View.generateViewId();
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -176,6 +184,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         map = Injector.get(Map.class);
 
         addMapListener();
+
+        createMapView();
     }
 
     private void showExportPopupMenu() {
@@ -338,6 +348,31 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
+    private void createMapView() {
+        float mapScale = preferences.getFloat(getString(R.string.pref_map_scaling), Float.NaN);
+
+        MapLibreMapOptions options = MapLibreMapOptions.createFromAttributes(this);
+        if (!Float.isNaN(mapScale)) {
+            options.pixelRatio(mapScale);
+        }
+
+        RelativeLayout layout = findViewById(R.id.main_layout);
+
+        MapView oldMapView = layout.findViewById(this.mapViewId);
+
+        MapView newMapView = new MapView(this, options);
+        newMapView.setId(this.mapViewId);
+        newMapView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        newMapView.onCreate(savedInstanceState);
+
+        if (oldMapView != null) {
+            layout.removeView(oldMapView);
+        }
+        layout.addView(newMapView, 0);
+
+        this.map.initMapViewAnyRegisterHandlers(newMapView);
+    }
+
     private void addMapListener() {
         Map.TouchDownListener touchDownCallback = () -> {
             MenuItem menuItem = toolbar.getMenu().findItem(R.id.toolbar_btn_gps_follow);
@@ -433,6 +468,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     map.reloadAllNotes();
                     break;
                 case REQUEST_SETTINGS_REQUEST_CODE:
+                    createMapView();
                     map.loadPreferences();
                     break;
                 case REQUEST_EXPORT_GEOJSON_RESULT_CODE:

@@ -2,6 +2,7 @@ package de.hauke_stieler.geonotes.map;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -10,6 +11,7 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.os.PowerManager;
 import android.view.WindowManager;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -26,6 +28,7 @@ import org.maplibre.android.location.LocationComponentOptions;
 import org.maplibre.android.location.engine.LocationEngineRequest;
 import org.maplibre.android.location.modes.CameraMode;
 import org.maplibre.android.maps.MapLibreMap;
+import org.maplibre.android.maps.MapLibreMapOptions;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.maps.Style;
 import org.maplibre.android.plugins.annotation.Symbol;
@@ -64,7 +67,6 @@ public class Map {
     private final NoteIconProvider noteIconProvider;
     private SymbolManager symbolManager;
 
-    private final MapView mapView;
     private MapLibreMap mlMap;
     private boolean mapFullyInitialized = false; // True when all listeners, preferences, notes, etc. are loaded and registered.
 
@@ -80,12 +82,10 @@ public class Map {
     private NoteMovedListener noteMovedCallback;
 
     public Map(Context context,
-               MapView mapView,
                Database database,
                SharedPreferences preferences,
                NoteIconProvider noteIconProvider) {
         this.context = context;
-        this.mapView = mapView;
         this.database = database;
         this.preferences = preferences;
         this.noteIconProvider = noteIconProvider;
@@ -97,7 +97,12 @@ public class Map {
         final PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, "geonotes:wakelock");
         wakeLock.acquire();
+    }
 
+    /**
+     * Initializes the MapView by setting style and registering handlers.
+     */
+    public void initMapViewAnyRegisterHandlers(MapView mapView) {
         mapView.getMapAsync(mlMap -> {
             mlMap.setStyle("asset://osm-map-style.json", style -> {
                 // Don't assign this earlier, because some other methods require a loaded style.
@@ -107,7 +112,7 @@ public class Map {
                 this.symbolManager.setIconAllowOverlap(true);
 
                 mlMap.addOnMapLongClickListener(coordinate -> {
-                    boolean useLongTap = preferences.getBoolean(context.getString(R.string.pref_tap_duration), false);
+                    boolean useLongTap = this.preferences.getBoolean(this.context.getString(R.string.pref_tap_duration), false);
                     if (!useLongTap) {
                         return false;
                     }
@@ -118,7 +123,7 @@ public class Map {
                         return true;
                     }
 
-                    boolean snapToGpsPosition = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
+                    boolean snapToGpsPosition = this.preferences.getBoolean(this.context.getString(R.string.pref_snap_note_gps), false);
                     Location lastKnownLocation = mlMap.getLocationComponent().getLastKnownLocation();
                     if (snapToGpsPosition && lastKnownLocation != null) {
                         LatLng lastKnownCoordinate = new LatLng(lastKnownLocation);
@@ -130,7 +135,7 @@ public class Map {
                 });
 
                 mlMap.addOnMapClickListener(coordinate -> {
-                    boolean useNormalTap = !preferences.getBoolean(context.getString(R.string.pref_tap_duration), false);
+                    boolean useNormalTap = !this.preferences.getBoolean(this.context.getString(R.string.pref_tap_duration), false);
                     if (!useNormalTap) {
                         return false;
                     }
@@ -141,7 +146,7 @@ public class Map {
                         return true;
                     }
 
-                    boolean snapToGpsPosition = preferences.getBoolean(context.getString(R.string.pref_snap_note_gps), false);
+                    boolean snapToGpsPosition = this.preferences.getBoolean(this.context.getString(R.string.pref_snap_note_gps), false);
                     Location lastKnownLocation = mlMap.getLocationComponent().getLastKnownLocation();
                     if (snapToGpsPosition && lastKnownLocation != null) {
                         LatLng lastKnownCoordinate = new LatLng(lastKnownLocation);
@@ -243,7 +248,7 @@ public class Map {
             mlMap.getUiSettings().setDisableRotateWhenScaling(true);
 
             ScaleBarPlugin scaleBarPlugin = new ScaleBarPlugin(mapView, mlMap);
-            ScaleBarOptions scaleBarOptions = new ScaleBarOptions(context)
+            ScaleBarOptions scaleBarOptions = new ScaleBarOptions(this.context)
                     .setTextSize(32f)
                     .setBarHeight(5f)
                     .setBorderWidth(2f)
@@ -261,10 +266,6 @@ public class Map {
     }
 
     public void loadPreferences() {
-//        TODO
-//        float mapScale = preferences.getFloat(context.getString(R.string.pref_map_scaling), 1.0f);
-//        setMapScaleFactor(mapScale);
-
         boolean enableRotatingMap = preferences.getBoolean(context.getString(R.string.pref_enable_rotating_map), false);
         float mapRotation = preferences.getFloat(context.getString(R.string.pref_map_rotation), 0f);
         updateMapRotation(enableRotatingMap, mapRotation);

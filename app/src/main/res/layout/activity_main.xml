@@ -92,10 +92,7 @@
         android:layout_below="@+id/toolbar"
         android:orientation="vertical">
 
-        <org.maplibre.android.maps.MapView
-            android:id="@+id/map"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <!-- This is the place there the MapView is placed but it's created in the Java code -->
 
         <!-- View for the note-symbol to stay calm in the center of the screen
          when the user moves the map underneath. The height and padding are used
