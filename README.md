@@ -16,7 +16,7 @@ All data is stored exclusively on your local device and no telemetry data is col
 [<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="60">](https://apt.izzysoft.de/fdroid/index/apk/de.hauke_stieler.geonotes)
 [<img src="https://user-images.githubusercontent.com/663460/26973090-f8fdc986-4d14-11e7-995a-e7c5e79ed925.png" alt="Download APK from GitHub" height="60">](https://github.com/hauke96/geonotes/releases/latest)
 
-GeoNotes runs on Android 7.0 (SDK 24) and newer. There's an [F-Droid version](https://f-droid.org/en/packages/de.hauke_stieler.geonotes/) only, there is _no_ version at the Google Play store.
+GeoNotes runs on Android 8.1 (SDK 27) and newer. There's an [F-Droid version](https://f-droid.org/en/packages/de.hauke_stieler.geonotes/) only, there is _no_ version at the Google Play store.
 
 ## Need help?
 
