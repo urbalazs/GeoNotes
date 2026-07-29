@@ -261,11 +261,7 @@ public class Map {
     }
 
     public void loadPreferences() {
-//        TODO Deactivated for now, because MapLibre seems not to support this.
-//        boolean showZoomButtons = preferences.getBoolean(context.getString(R.string.pref_zoom_buttons), true);
-//        setZoomButtonVisibility(showZoomButtons);
-
-//        TODO Deactivated for now, because MapLibre seems not to support this.
+//        TODO
 //        float mapScale = preferences.getFloat(context.getString(R.string.pref_map_scaling), 1.0f);
 //        setMapScaleFactor(mapScale);
 

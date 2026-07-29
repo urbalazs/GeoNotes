@@ -26,7 +26,6 @@
     <string name="toolbar_open_filter_dialog">Öppna filtrering</string>
 
     <!-- Settings -->
-    <string name="show_zoom_buttons">Visa zoom-knappar</string>
     <string name="map_scaling_factor">Kartans skalningsfaktor</string>
     <string name="snap_note_to_gps_location">Snäpp anteckning till GPS-position</string>
     <string name="enable_rotating_the_map">Tillåt rotering av kartan</string>

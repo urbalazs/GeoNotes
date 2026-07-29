@@ -27,7 +27,6 @@
     <string name="toolbar_open_filter_dialog">Open Filter dialog</string>
 
     <!-- Settings -->
-    <string name="show_zoom_buttons">Afficher les boutons de zoom</string>
     <string name="map_scaling_factor">Facteur d’échelle de la carte</string>
     <string name="snap_note_to_gps_location">Placer la note sur la position GPS</string>
     <string name="enable_rotating_the_map">Activer la rotation de carte</string>

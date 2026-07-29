@@ -488,10 +488,7 @@ public class BackupImportDialog extends DialogFragment {
     private void importSettings(NoteBackupModel noteBackupModel) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        String key = getContext().getString(R.string.pref_zoom_buttons);
-        editor.putBoolean(key, (Boolean) noteBackupModel.preferences.getOrDefault(key, false));
-
-        key = getContext().getString(R.string.pref_map_scaling);
+        String key = getContext().getString(R.string.pref_map_scaling);
         editor.putFloat(key, new Float((Double) noteBackupModel.preferences.getOrDefault(key, 1.0f)));
 
         key = getContext().getString(R.string.pref_snap_note_gps);

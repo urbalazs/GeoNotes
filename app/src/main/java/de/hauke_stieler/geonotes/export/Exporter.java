@@ -72,11 +72,7 @@ public class Exporter {
         // Collect all data
         HashMap<String, Object> preferencesMap = new HashMap<>();
 
-        String key = context.getString(R.string.pref_zoom_buttons);
-        boolean prefZoomButtons = preferences.getBoolean(key, true);
-        preferencesMap.put(key, prefZoomButtons);
-
-        key = context.getString(R.string.pref_map_scaling);
+        String key = context.getString(R.string.pref_map_scaling);
         float prefMapScaling = preferences.getFloat(key, 1.0f);
         preferencesMap.put(key, prefMapScaling);
 

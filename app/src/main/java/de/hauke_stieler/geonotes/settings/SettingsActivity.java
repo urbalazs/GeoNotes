@@ -110,11 +110,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void load() {
-        // TODO remove this?
-//        Deactivated for now, because MapLibre seems not to support this.
-//        boolean prefZoomButtons = preferences.getBoolean(getString(R.string.pref_zoom_buttons), true);
-//        ((Switch) findViewById(R.id.settings_zoom_switch)).setChecked(prefZoomButtons);
-
+        // TODO
 //        Deactivated for now, because MapLibre seems not to support this.
 //        float prefMapScaling = preferences.getFloat(getString(R.string.pref_map_scaling), 1.0f);
 //        ((EditText) findViewById(R.id.settings_scale_input)).setText("" + prefMapScaling);
@@ -135,12 +131,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void save() {
         SharedPreferences.Editor editor = preferences.edit();
 
-        // TODO remove this?
-//        Deactivated for now, because MapLibre seems not to support this.
-//        boolean zoomSwitchChecked = ((Switch) findViewById(R.id.settings_zoom_switch)).isChecked();
-//        editor.putBoolean(getString(R.string.pref_zoom_buttons), zoomSwitchChecked);
-
-//        Deactivated for now, because MapLibre seems not to support this.
+        // TODO
 //        String mapScaleString = ((EditText) findViewById(R.id.settings_scale_input)).getText().toString();
 //        float mapScale = 1.0f;
 //        try {

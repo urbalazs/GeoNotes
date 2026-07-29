@@ -28,7 +28,6 @@
     <string name="toolbar_open_filter_dialog">Otevřít nabídku filtrů</string>
 
     <!-- Settings -->
-    <string name="show_zoom_buttons">Zobrazit tlačítka přiblížení</string>
     <string name="map_scaling_factor">Faktor měřítka mapy</string>
     <string name="snap_note_to_gps_location">Přichytit poznámku k poloze z GPS</string>
     <string name="enable_rotating_the_map">Povolit otáčení mapy</string>
