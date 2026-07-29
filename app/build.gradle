@@ -5,14 +5,14 @@ plugins {
 android {
     namespace = 'de.hauke_stieler.geonotes'
     defaultConfig {
-        applicationId "de.hauke_stieler.geonotesneo"
+        applicationId "de.hauke_stieler.geonotes"
 
         minSdkVersion 27
         compileSdk = 37
         targetSdkVersion 37
 
-        versionCode 1007001
-        versionName "1.7.1"
+        versionCode 1008000
+        versionName "1.8.0-rc.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

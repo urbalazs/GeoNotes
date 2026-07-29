@@ -11,7 +11,6 @@
     <string name="feedback_mail_local_part" translatable="false">geonotes</string>
     <string name="ok">OK</string>
     <string name="reset">Resetovat</string>
-    <string name="osm_contribution">© Přispěvatelé <a href="https://openstreetmap.org/copyright">OpenStreetMap</a></string>
 
     <!-- Dialog buttons -->
     <string name="dialog_yes">Ano</string>
